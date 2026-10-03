@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: lingo
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/lingo}
+    username: ${DB_USERNAME:lingo}
+    password: ${DB_PASSWORD:lingo}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
