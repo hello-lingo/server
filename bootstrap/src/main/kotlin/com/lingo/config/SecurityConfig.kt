@@ -1,6 +1,6 @@
 package com.lingo.config
 
-import com.lingo.application.user.port.out.TokenProviderPort
+import com.lingo.application.user.port.out.JwtProviderPort
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -16,7 +16,7 @@ class SecurityConfig {
 	@Bean
 	fun securityFilterChain(
 		http: HttpSecurity,
-		tokenProviderPort: TokenProviderPort,
+		tokenProviderPort: JwtProviderPort,
 		jsonMapper: JsonMapper,
 	): SecurityFilterChain =
 		http

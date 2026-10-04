@@ -1,6 +1,6 @@
 package com.lingo.application.user.usecase
 
-import com.lingo.application.user.IssuedAccessToken
+import com.lingo.application.user.model.IssuedAccessJwt
 import com.lingo.application.user.exception.InvalidCredentialsException
 import com.lingo.domain.user.Email
 import com.lingo.domain.user.User
@@ -81,7 +81,7 @@ class LoginServiceTest {
 	@Test
 	fun `A8 toString은 비밀번호와 토큰 원문을 노출하지 않는다`() {
 		assertFalse(LoginCommand("a@b.com", "Abcdef1!").toString().contains("Abcdef1!"))
-		assertFalse(IssuedAccessToken("secret-token", 3600).toString().contains("secret-token"))
+		assertFalse(IssuedAccessJwt("secret-token", 3600).toString().contains("secret-token"))
 	}
 
 	@Test

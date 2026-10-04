@@ -1,7 +1,7 @@
 package com.lingo.adapter.inbound.web.user
 
 import com.lingo.adapter.inbound.web.common.AuthRequestAttributes
-import com.lingo.application.user.AuthenticatedUser
+import com.lingo.application.user.model.AuthenticatedUser
 import com.lingo.application.user.exception.DuplicateEmailException
 import com.lingo.application.user.exception.InvalidCredentialsException
 import com.lingo.application.user.usecase.LoginCommand

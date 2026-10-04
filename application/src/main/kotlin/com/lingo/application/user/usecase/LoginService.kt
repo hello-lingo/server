@@ -2,7 +2,7 @@ package com.lingo.application.user.usecase
 
 import com.lingo.application.user.exception.InvalidCredentialsException
 import com.lingo.application.user.port.out.PasswordEncoderPort
-import com.lingo.application.user.port.out.TokenProviderPort
+import com.lingo.application.user.port.out.JwtProviderPort
 import com.lingo.application.user.port.out.UserRepositoryPort
 import com.lingo.domain.user.Email
 import com.lingo.domain.user.InvalidEmailException
@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional
 class LoginService(
 	private val userRepositoryPort: UserRepositoryPort,
 	private val passwordEncoderPort: PasswordEncoderPort,
-	private val tokenProviderPort: TokenProviderPort,
+	private val tokenProviderPort: JwtProviderPort,
 ) {
 
 	// 사용자가 없을 때도 해시 비교 비용을 치르도록 인코더가 만든 더미 해시를 쓴다

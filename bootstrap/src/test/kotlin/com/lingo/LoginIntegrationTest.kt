@@ -1,6 +1,6 @@
 package com.lingo
 
-import com.lingo.adapter.outbound.external.security.JwtTokenProvider
+import com.lingo.adapter.outbound.external.security.JwtProvider
 import com.lingo.domain.user.Email
 import com.lingo.domain.user.User
 import org.junit.jupiter.api.BeforeEach
@@ -105,9 +105,9 @@ class LoginIntegrationTest @Autowired constructor(
 	@Test
 	fun `L5 토큰 없음 위조 만료 토큰은 me에서 401 AUTH-002 JSON이다`() {
 		signUp()
-		val expired = JwtTokenProvider(secret, 3600, Clock.fixed(Instant.parse("2020-01-01T00:00:00Z"), ZoneOffset.UTC))
+		val expired = JwtProvider(secret, 3600, Clock.fixed(Instant.parse("2020-01-01T00:00:00Z"), ZoneOffset.UTC))
 			.issue(User(7, Email.of("a@b.com"), "h", "n")).token
-		val forged = JwtTokenProvider("another-secret-another-secret-32bytes!", 3600, Clock.systemUTC())
+		val forged = JwtProvider("another-secret-another-secret-32bytes!", 3600, Clock.systemUTC())
 			.issue(User(7, Email.of("a@b.com"), "h", "n")).token
 
 		listOf(null, "Bearer $forged", "Bearer $expired", "Bearer garbage").forEach { header ->

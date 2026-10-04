@@ -15,7 +15,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class JwtTokenProviderTest {
+class JwtProviderTest {
 
 	private val secret = "test-secret-test-secret-test-secret-32b"
 	private val now = Instant.parse("2026-01-01T00:00:00Z")
@@ -24,7 +24,7 @@ class JwtTokenProviderTest {
 	private fun clockAt(instant: Instant) = Clock.fixed(instant, ZoneOffset.UTC)
 
 	private fun provider(secret: String = this.secret, at: Instant = now) =
-		JwtTokenProvider(secret, 3600, clockAt(at))
+		JwtProvider(secret, 3600, clockAt(at))
 
 	private fun payloadOf(token: String): String =
 		String(Base64.getUrlDecoder().decode(token.split(".")[1]))

@@ -1,8 +1,8 @@
 package com.lingo.adapter.outbound.external.security
 
-import com.lingo.application.user.AuthenticatedUser
-import com.lingo.application.user.IssuedAccessToken
-import com.lingo.application.user.port.out.TokenProviderPort
+import com.lingo.application.user.model.AuthenticatedUser
+import com.lingo.application.user.model.IssuedAccessJwt
+import com.lingo.application.user.port.out.JwtProviderPort
 import com.lingo.domain.user.User
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
@@ -13,11 +13,11 @@ import java.time.Clock
 import java.util.Date
 
 @Component
-class JwtTokenProvider(
+class JwtProvider(
 	@Value("\${lingo.auth.jwt.secret}") secret: String,
 	@Value("\${lingo.auth.jwt.access-ttl-seconds}") private val accessTtlSeconds: Long,
 	private val clock: Clock,
-) : TokenProviderPort {
+) : JwtProviderPort {
 
 	private val key = secret.toByteArray(Charsets.UTF_8).also {
 		require(it.size >= MIN_SECRET_BYTES) { "JWT secret은 최소 ${MIN_SECRET_BYTES}바이트여야 합니다." }
@@ -28,7 +28,7 @@ class JwtTokenProvider(
 		.clock { Date.from(clock.instant()) }
 		.build()
 
-	override fun issue(user: User): IssuedAccessToken {
+	override fun issue(user: User): IssuedAccessJwt {
 		val userId = requireNotNull(user.id) { "id가 없는 사용자에게 토큰을 발급할 수 없습니다." }
 		val issuedAt = clock.instant()
 		val token = Jwts.builder()
@@ -38,7 +38,7 @@ class JwtTokenProvider(
 			.expiration(Date.from(issuedAt.plusSeconds(accessTtlSeconds)))
 			.signWith(key)
 			.compact()
-		return IssuedAccessToken(token, accessTtlSeconds)
+		return IssuedAccessJwt(token, accessTtlSeconds)
 	}
 
 	override fun verify(token: String): AuthenticatedUser? =

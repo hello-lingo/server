@@ -1,9 +1,9 @@
 package com.lingo
 
 import com.lingo.adapter.inbound.web.common.AuthRequestAttributes
-import com.lingo.application.user.AuthenticatedUser
-import com.lingo.application.user.IssuedAccessToken
-import com.lingo.application.user.port.out.TokenProviderPort
+import com.lingo.application.user.model.AuthenticatedUser
+import com.lingo.application.user.model.IssuedAccessJwt
+import com.lingo.application.user.port.out.JwtProviderPort
 import com.lingo.config.JwtAuthenticationFilter
 import com.lingo.domain.user.User
 import org.springframework.mock.web.MockFilterChain
@@ -19,8 +19,8 @@ import kotlin.test.assertNull
 class JwtAuthenticationFilterTest {
 
 	private val user = AuthenticatedUser(7, "a@b.com")
-	private val tokens = object : TokenProviderPort {
-		override fun issue(user: User): IssuedAccessToken = error("unused")
+	private val tokens = object : JwtProviderPort {
+		override fun issue(user: User): IssuedAccessJwt = error("unused")
 		override fun verify(token: String): AuthenticatedUser? = if (token == "valid") user else null
 	}
 	private val filter = JwtAuthenticationFilter(tokens)

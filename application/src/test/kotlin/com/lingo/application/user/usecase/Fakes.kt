@@ -1,9 +1,9 @@
 package com.lingo.application.user.usecase
 
-import com.lingo.application.user.AuthenticatedUser
-import com.lingo.application.user.IssuedAccessToken
+import com.lingo.application.user.model.AuthenticatedUser
+import com.lingo.application.user.model.IssuedAccessJwt
 import com.lingo.application.user.port.out.PasswordEncoderPort
-import com.lingo.application.user.port.out.TokenProviderPort
+import com.lingo.application.user.port.out.JwtProviderPort
 import com.lingo.application.user.port.out.UserRepositoryPort
 import com.lingo.domain.user.Email
 import com.lingo.domain.user.RawPassword
@@ -53,12 +53,12 @@ class RecordingPasswordEncoder : PasswordEncoderPort {
 	}
 }
 
-class FakeTokenProvider : TokenProviderPort {
+class FakeTokenProvider : JwtProviderPort {
 	val issuedFor = mutableListOf<User>()
 
-	override fun issue(user: User): IssuedAccessToken {
+	override fun issue(user: User): IssuedAccessJwt {
 		issuedFor += user
-		return IssuedAccessToken("token-for-${user.id}", 3600)
+		return IssuedAccessJwt("token-for-${user.id}", 3600)
 	}
 
 	override fun verify(token: String): AuthenticatedUser? = null

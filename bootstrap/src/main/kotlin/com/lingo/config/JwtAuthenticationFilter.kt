@@ -1,7 +1,7 @@
 package com.lingo.config
 
 import com.lingo.adapter.inbound.web.common.AuthRequestAttributes
-import com.lingo.application.user.port.out.TokenProviderPort
+import com.lingo.application.user.port.out.JwtProviderPort
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -17,7 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter
  * SecurityConfig에서만 등록하므로 빈으로 만들지 않는다.
  */
 class JwtAuthenticationFilter(
-	private val tokenProviderPort: TokenProviderPort,
+	private val tokenProviderPort: JwtProviderPort,
 ) : OncePerRequestFilter() {
 
 	override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {

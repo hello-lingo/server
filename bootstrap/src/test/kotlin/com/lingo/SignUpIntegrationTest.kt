@@ -1,7 +1,7 @@
 package com.lingo
 
 import com.lingo.application.user.port.out.PasswordEncoderPort
-import com.lingo.application.user.port.out.TokenProviderPort
+import com.lingo.application.user.port.out.JwtProviderPort
 import com.lingo.application.user.port.out.UserRepositoryPort
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -44,7 +44,7 @@ class SignUpIntegrationTest @Autowired constructor(
 
 	@Test
 	fun `I0 포트마다 구현 빈이 정확히 하나씩 주입된다`() {
-		listOf(UserRepositoryPort::class.java, PasswordEncoderPort::class.java, TokenProviderPort::class.java)
+		listOf(UserRepositoryPort::class.java, PasswordEncoderPort::class.java, JwtProviderPort::class.java)
 			.forEach { port -> assertEquals(1, context.getBeansOfType(port).size, port.simpleName) }
 	}
 
