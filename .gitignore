@@ -2,16 +2,35 @@
 .gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# Kotlin
 .kotlin/
 
-# IntelliJ
+# IntelliJ IDEA
 .idea/
 *.iml
+*.iws
+*.ipr
 out/
 
-# OS
+# Eclipse / VS Code
+.classpath
+.project
+.settings/
+.vscode/
+
+# macOS
 .DS_Store
 
-# Tooling
+# 로그 / 임시 산출물
+*.log
+*.class
+
+# 환경변수 (시크릿)
+.env
+.env.local
+
+# 작업 툴링
 .task/
 .hazard/
