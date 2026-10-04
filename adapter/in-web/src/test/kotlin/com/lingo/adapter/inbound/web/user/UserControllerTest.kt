@@ -23,8 +23,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import kotlin.test.Test
 import kotlin.test.assertFalse
 
-@WebMvcTest(SignUpController::class)
-class SignUpControllerTest @Autowired constructor(
+@WebMvcTest(UserController::class)
+class UserControllerTest @Autowired constructor(
 	private val mockMvc: MockMvc,
 ) {
 

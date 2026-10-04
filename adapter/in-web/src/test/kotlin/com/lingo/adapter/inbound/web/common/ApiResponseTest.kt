@@ -1,6 +1,6 @@
 package com.lingo.adapter.inbound.web.common
 
-import com.lingo.adapter.inbound.web.user.SignUpResponse
+import com.lingo.adapter.inbound.web.user.response.SignUpResponse
 import tools.jackson.databind.JsonNode
 import tools.jackson.module.kotlin.jacksonObjectMapper
 import kotlin.test.Test

@@ -1,6 +1,8 @@
 package com.lingo.adapter.inbound.web.user
 
 import com.lingo.adapter.inbound.web.common.ApiResponse
+import com.lingo.adapter.inbound.web.user.request.SignUpRequest
+import com.lingo.adapter.inbound.web.user.response.SignUpResponse
 import com.lingo.application.user.SignUpService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -12,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/v1/auth")
-class SignUpController(
+class UserController(
 	private val signUpService: SignUpService,
 ) {
 

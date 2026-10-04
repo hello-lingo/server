@@ -34,3 +34,6 @@ out/
 # 작업 툴링
 .task/
 .hazard/
+
+# 개인 문서
+user story.pdf
