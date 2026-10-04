@@ -1,13 +1,12 @@
 package com.lingo.application.user
 
-import com.lingo.application.user.port.out.ExistsUserByEmailPort
 import com.lingo.application.user.port.out.PasswordEncoderPort
-import com.lingo.application.user.port.out.SaveUserPort
+import com.lingo.application.user.port.out.UserRepositoryPort
 import com.lingo.domain.user.Email
 import com.lingo.domain.user.RawPassword
 import com.lingo.domain.user.User
 
-class FakeUserStore : SaveUserPort, ExistsUserByEmailPort {
+class FakeUserStore : UserRepositoryPort {
 	val users = mutableListOf<User>()
 	var existsCalls = 0
 	var saveCalls = 0

@@ -15,7 +15,7 @@ class SignUpServiceTest {
 
 	private val store = FakeUserStore()
 	private val encoder = RecordingPasswordEncoder()
-	private val service = SignUpService(store, encoder, store)
+	private val service = SignUpService(store, encoder)
 	private val command = SignUpCommand("User@Example.com", "Abcdef1!", "홍길동")
 
 	@Test

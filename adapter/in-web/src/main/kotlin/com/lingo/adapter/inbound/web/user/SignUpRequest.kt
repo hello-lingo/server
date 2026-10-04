@@ -1,4 +1,4 @@
-package com.lingo.adapter.inbound.web
+package com.lingo.adapter.inbound.web.user
 
 import com.lingo.application.user.SignUpCommand
 import jakarta.validation.constraints.NotBlank

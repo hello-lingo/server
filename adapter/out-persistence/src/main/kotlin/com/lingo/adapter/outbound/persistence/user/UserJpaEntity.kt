@@ -1,4 +1,4 @@
-package com.lingo.adapter.outbound.persistence
+package com.lingo.adapter.outbound.persistence.user
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity

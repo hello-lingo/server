@@ -1,4 +1,4 @@
-package com.lingo.adapter.outbound.external
+package com.lingo.adapter.outbound.external.security
 
 import com.lingo.application.user.port.out.PasswordEncoderPort
 import com.lingo.domain.user.RawPassword

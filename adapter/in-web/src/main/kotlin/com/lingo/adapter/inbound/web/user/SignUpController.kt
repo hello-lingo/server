@@ -1,5 +1,6 @@
-package com.lingo.adapter.inbound.web
+package com.lingo.adapter.inbound.web.user
 
+import com.lingo.adapter.inbound.web.common.ApiResponse
 import com.lingo.application.user.SignUpService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -17,8 +18,8 @@ class SignUpController(
 
 	@PostMapping("/signup")
 	@ResponseStatus(HttpStatus.CREATED)
-	fun signUp(@Valid @RequestBody request: SignUpRequest): SignUpResponse {
+	fun signUp(@Valid @RequestBody request: SignUpRequest): ApiResponse<SignUpResponse> {
 		val result = signUpService.signUp(request.toCommand())
-		return SignUpResponse(userId = result.userId, email = result.email)
+		return ApiResponse.success(SignUpResponse(userId = result.userId, email = result.email))
 	}
 }

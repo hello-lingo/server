@@ -1,4 +1,4 @@
-package com.lingo.adapter.outbound.persistence
+package com.lingo.adapter.outbound.persistence.user
 
 import com.lingo.domain.user.Email
 import com.lingo.domain.user.User
