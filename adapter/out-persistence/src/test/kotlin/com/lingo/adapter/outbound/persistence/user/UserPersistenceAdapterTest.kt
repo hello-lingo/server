@@ -1,6 +1,6 @@
 package com.lingo.adapter.outbound.persistence.user
 
-import com.lingo.application.user.DuplicateEmailException
+import com.lingo.application.user.exception.DuplicateEmailException
 import com.lingo.domain.user.Email
 import com.lingo.domain.user.User
 import jakarta.persistence.EntityManager

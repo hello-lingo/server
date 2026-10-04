@@ -1,5 +1,7 @@
-package com.lingo.application.user
+package com.lingo.application.user.usecase
 
+import com.lingo.application.user.IssuedAccessToken
+import com.lingo.application.user.exception.InvalidCredentialsException
 import com.lingo.domain.user.Email
 import com.lingo.domain.user.User
 import kotlin.test.BeforeTest

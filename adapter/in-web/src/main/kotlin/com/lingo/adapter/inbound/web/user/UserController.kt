@@ -8,8 +8,8 @@ import com.lingo.adapter.inbound.web.user.response.LoginResponse
 import com.lingo.adapter.inbound.web.user.response.MeResponse
 import com.lingo.adapter.inbound.web.user.response.SignUpResponse
 import com.lingo.application.user.AuthenticatedUser
-import com.lingo.application.user.LoginService
-import com.lingo.application.user.SignUpService
+import com.lingo.application.user.usecase.LoginService
+import com.lingo.application.user.usecase.SignUpService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping

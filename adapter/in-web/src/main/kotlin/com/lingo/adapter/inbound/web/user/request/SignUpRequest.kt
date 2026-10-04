@@ -1,6 +1,6 @@
 package com.lingo.adapter.inbound.web.user.request
 
-import com.lingo.application.user.SignUpCommand
+import com.lingo.application.user.usecase.SignUpCommand
 import jakarta.validation.constraints.NotBlank
 
 data class SignUpRequest(

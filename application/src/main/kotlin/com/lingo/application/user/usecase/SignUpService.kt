@@ -1,5 +1,6 @@
-package com.lingo.application.user
+package com.lingo.application.user.usecase
 
+import com.lingo.application.user.exception.DuplicateEmailException
 import com.lingo.application.user.port.out.PasswordEncoderPort
 import com.lingo.application.user.port.out.UserRepositoryPort
 import com.lingo.domain.user.Email

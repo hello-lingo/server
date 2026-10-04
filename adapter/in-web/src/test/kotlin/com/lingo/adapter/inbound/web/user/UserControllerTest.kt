@@ -2,14 +2,14 @@ package com.lingo.adapter.inbound.web.user
 
 import com.lingo.adapter.inbound.web.common.AuthRequestAttributes
 import com.lingo.application.user.AuthenticatedUser
-import com.lingo.application.user.DuplicateEmailException
-import com.lingo.application.user.InvalidCredentialsException
-import com.lingo.application.user.LoginCommand
-import com.lingo.application.user.LoginResult
-import com.lingo.application.user.LoginService
-import com.lingo.application.user.SignUpCommand
-import com.lingo.application.user.SignUpResult
-import com.lingo.application.user.SignUpService
+import com.lingo.application.user.exception.DuplicateEmailException
+import com.lingo.application.user.exception.InvalidCredentialsException
+import com.lingo.application.user.usecase.LoginCommand
+import com.lingo.application.user.usecase.LoginResult
+import com.lingo.application.user.usecase.LoginService
+import com.lingo.application.user.usecase.SignUpCommand
+import com.lingo.application.user.usecase.SignUpResult
+import com.lingo.application.user.usecase.SignUpService
 import com.lingo.domain.user.InvalidEmailException
 import com.lingo.domain.user.InvalidPasswordException
 import org.hamcrest.Matchers.nullValue

@@ -1,7 +1,7 @@
 package com.lingo.adapter.inbound.web.common
 
-import com.lingo.application.user.DuplicateEmailException
-import com.lingo.application.user.InvalidCredentialsException
+import com.lingo.application.user.exception.DuplicateEmailException
+import com.lingo.application.user.exception.InvalidCredentialsException
 import com.lingo.domain.user.InvalidEmailException
 import com.lingo.domain.user.InvalidNameException
 import com.lingo.domain.user.InvalidPasswordException

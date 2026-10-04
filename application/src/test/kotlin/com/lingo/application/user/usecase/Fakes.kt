@@ -1,5 +1,7 @@
-package com.lingo.application.user
+package com.lingo.application.user.usecase
 
+import com.lingo.application.user.AuthenticatedUser
+import com.lingo.application.user.IssuedAccessToken
 import com.lingo.application.user.port.out.PasswordEncoderPort
 import com.lingo.application.user.port.out.TokenProviderPort
 import com.lingo.application.user.port.out.UserRepositoryPort

@@ -1,6 +1,6 @@
 package com.lingo.adapter.inbound.web.user.request
 
-import com.lingo.application.user.LoginCommand
+import com.lingo.application.user.usecase.LoginCommand
 import jakarta.validation.constraints.NotBlank
 
 data class LoginRequest(

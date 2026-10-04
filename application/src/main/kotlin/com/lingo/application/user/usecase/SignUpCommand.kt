@@ -1,4 +1,4 @@
-package com.lingo.application.user
+package com.lingo.application.user.usecase
 
 data class SignUpCommand(
 	val email: String,
