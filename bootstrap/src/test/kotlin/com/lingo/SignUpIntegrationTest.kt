@@ -1,6 +1,7 @@
 package com.lingo
 
 import com.lingo.application.user.port.out.PasswordEncoderPort
+import com.lingo.application.user.port.out.TokenProviderPort
 import com.lingo.application.user.port.out.UserRepositoryPort
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -43,7 +44,7 @@ class SignUpIntegrationTest @Autowired constructor(
 
 	@Test
 	fun `I0 포트마다 구현 빈이 정확히 하나씩 주입된다`() {
-		listOf(UserRepositoryPort::class.java, PasswordEncoderPort::class.java)
+		listOf(UserRepositoryPort::class.java, PasswordEncoderPort::class.java, TokenProviderPort::class.java)
 			.forEach { port -> assertEquals(1, context.getBeansOfType(port).size, port.simpleName) }
 	}
 
@@ -79,6 +80,12 @@ class SignUpIntegrationTest @Autowired constructor(
 
 	@Test
 	fun `I4 signup 이외 경로는 보호된다`() {
-		mockMvc.perform(get("/api/v1/anything")).andExpect(status().isForbidden)
+		mockMvc.perform(get("/api/v1/anything")).andExpect(status().isUnauthorized)
+			.andExpect(jsonPath("$.error.code").value("AUTH-002"))
+	}
+
+	@Test
+	fun `I5 signup이 아닌 auth 경로도 토큰 없이는 401`() {
+		mockMvc.perform(get("/api/v1/auth/signup")).andExpect(status().isUnauthorized)
 	}
 }

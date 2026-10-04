@@ -1,6 +1,7 @@
 package com.lingo.adapter.inbound.web.common
 
 import com.lingo.application.user.DuplicateEmailException
+import com.lingo.application.user.InvalidCredentialsException
 import com.lingo.domain.user.DomainException
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
@@ -19,6 +20,9 @@ class GlobalExceptionHandler {
 
 	@ExceptionHandler(DuplicateEmailException::class)
 	fun handleDuplicateEmail(): ResponseEntity<ApiResponse<Nothing>> = respond(ErrorCode.DUPLICATE_EMAIL)
+
+	@ExceptionHandler(InvalidCredentialsException::class)
+	fun handleInvalidCredentials(): ResponseEntity<ApiResponse<Nothing>> = respond(ErrorCode.INVALID_CREDENTIALS)
 
 	@ExceptionHandler(DomainException::class)
 	fun handleDomain(e: DomainException): ResponseEntity<ApiResponse<Nothing>> =

@@ -20,4 +20,6 @@ class UserPersistenceAdapter(
 		}
 
 	override fun existsByEmail(email: Email): Boolean = repository.existsByEmail(email.value)
+
+	override fun findByEmail(email: Email): User? = repository.findByEmail(email.value)?.let(UserMapper::toDomain)
 }

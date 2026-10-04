@@ -28,6 +28,8 @@ class ErrorCodeTest {
 	fun `EC3 상수별 code와 status가 표와 일치한다`() {
 		val expected = mapOf(
 			ErrorCode.DUPLICATE_EMAIL to ("USER-001" to HttpStatus.CONFLICT),
+			ErrorCode.INVALID_CREDENTIALS to ("AUTH-001" to HttpStatus.UNAUTHORIZED),
+			ErrorCode.UNAUTHORIZED to ("AUTH-002" to HttpStatus.UNAUTHORIZED),
 			ErrorCode.VALIDATION_FAILED to ("COMMON-001" to HttpStatus.BAD_REQUEST),
 			ErrorCode.INVALID_REQUEST to ("COMMON-002" to HttpStatus.BAD_REQUEST),
 			ErrorCode.METHOD_NOT_ALLOWED to ("COMMON-003" to HttpStatus.METHOD_NOT_ALLOWED),

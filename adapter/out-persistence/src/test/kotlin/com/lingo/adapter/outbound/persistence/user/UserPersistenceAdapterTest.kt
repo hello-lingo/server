@@ -14,6 +14,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @DataJpaTest
@@ -62,5 +63,22 @@ class UserPersistenceAdapterTest @Autowired constructor(
 		entityManager.clear()
 
 		assertEquals("\$2a\$10\$abcdefg", repository.findById(assertNotNull(saved.id)).get().passwordHash)
+	}
+
+	@Test
+	fun `R5 이메일로 조회하면 대소문자 정규화 후 같은 사용자를 반환한다`() {
+		val saved = adapter.save(newUser("a@b.com", "\$2a\$10\$hash"))
+		entityManager.clear()
+
+		val found = assertNotNull(adapter.findByEmail(Email.of("A@B.com")))
+
+		assertEquals(saved.id, found.id)
+		assertEquals("\$2a\$10\$hash", found.passwordHash)
+		assertEquals("홍길동", found.name)
+	}
+
+	@Test
+	fun `R6 저장되지 않은 이메일은 null`() {
+		assertNull(adapter.findByEmail(Email.of("none@b.com")))
 	}
 }

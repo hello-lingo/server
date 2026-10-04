@@ -3,6 +3,7 @@ package com.lingo.adapter.outbound.external.security
 import com.lingo.domain.user.RawPassword
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
@@ -29,5 +30,19 @@ class BCryptPasswordEncoderAdapterTest {
 		val hash = adapter.encode(raw)
 
 		assertTrue(BCryptPasswordEncoder().matches(raw.value, hash))
+	}
+
+	@Test
+	fun `B4 matches는 올바른 원문이면 true 틀린 원문이면 false`() {
+		val hash = adapter.encode(raw)
+
+		assertTrue(adapter.matches(raw.value, hash))
+		assertFalse(adapter.matches("Wrong1!aa", hash))
+	}
+
+	@Test
+	fun `B5 형식이 깨진 해시는 예외 없이 false`() {
+		assertFalse(adapter.matches(raw.value, "not-a-bcrypt-hash"))
+		assertFalse(adapter.matches(raw.value, ""))
 	}
 }

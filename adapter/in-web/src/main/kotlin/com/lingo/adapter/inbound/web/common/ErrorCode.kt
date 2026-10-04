@@ -5,6 +5,8 @@ import org.springframework.http.HttpStatus
 // 코드 접두는 도메인 규칙을 따른다: USER-, AUTH-, COMMON-
 enum class ErrorCode(val code: String, val message: String, val status: HttpStatus) {
 	DUPLICATE_EMAIL("USER-001", "이미 가입된 이메일입니다.", HttpStatus.CONFLICT),
+	INVALID_CREDENTIALS("AUTH-001", "이메일 또는 비밀번호가 올바르지 않습니다.", HttpStatus.UNAUTHORIZED),
+	UNAUTHORIZED("AUTH-002", "인증이 필요합니다.", HttpStatus.UNAUTHORIZED),
 	VALIDATION_FAILED("COMMON-001", "요청 값이 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
 	INVALID_REQUEST("COMMON-002", "잘못된 요청입니다.", HttpStatus.BAD_REQUEST),
 	METHOD_NOT_ALLOWED("COMMON-003", "지원하지 않는 HTTP 메서드입니다.", HttpStatus.METHOD_NOT_ALLOWED),

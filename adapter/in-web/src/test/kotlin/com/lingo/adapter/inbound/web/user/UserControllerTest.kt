@@ -1,6 +1,12 @@
 package com.lingo.adapter.inbound.web.user
 
+import com.lingo.adapter.inbound.web.common.AuthRequestAttributes
+import com.lingo.application.user.AuthenticatedUser
 import com.lingo.application.user.DuplicateEmailException
+import com.lingo.application.user.InvalidCredentialsException
+import com.lingo.application.user.LoginCommand
+import com.lingo.application.user.LoginResult
+import com.lingo.application.user.LoginService
 import com.lingo.application.user.SignUpCommand
 import com.lingo.application.user.SignUpResult
 import com.lingo.application.user.SignUpService
@@ -30,6 +36,9 @@ class UserControllerTest @Autowired constructor(
 
 	@MockitoBean
 	private lateinit var signUpService: SignUpService
+
+	@MockitoBean
+	private lateinit var loginService: LoginService
 
 	private val validBody = """{"email":"a@b.com","password":"Abcdef1!","name":"홍길동"}"""
 	private val command = SignUpCommand("a@b.com", "Abcdef1!", "홍길동")
@@ -120,6 +129,71 @@ class UserControllerTest @Autowired constructor(
 	fun `W6 GET은 405`() {
 		mockMvc.perform(get("/api/v1/auth/signup")).andExpect(status().isMethodNotAllowed)
 			.andExpect(jsonPath("$.success").value(false))
+			.andExpect(jsonPath("$.error.code").value("COMMON-003"))
+	}
+
+	private val loginBody = """{"email":"a@b.com","password":"Abcdef1!"}"""
+	private val loginCommand = LoginCommand("a@b.com", "Abcdef1!")
+
+	private fun login(body: String) =
+		mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(body))
+
+	@Test
+	fun `W7 로그인 성공은 200과 토큰을 반환하고 기대 command로 호출된다`() {
+		given(loginService.login(loginCommand)).willReturn(LoginResult("tkn", 3600))
+
+		login(loginBody)
+			.andExpect(status().isOk)
+			.andExpect(jsonPath("$.success").value(true))
+			.andExpect(jsonPath("$.data.accessToken").value("tkn"))
+			.andExpect(jsonPath("$.data.tokenType").value("Bearer"))
+			.andExpect(jsonPath("$.data.expiresIn").value(3600))
+			.andExpect(jsonPath("$.error").value(nullValue()))
+
+		verify(loginService).login(loginCommand)
+	}
+
+	@Test
+	fun `W8 인증 실패는 401 AUTH-001이고 응답에 비밀번호 원문이 없다`() {
+		given(loginService.login(loginCommand)).willThrow(InvalidCredentialsException())
+
+		val body = login(loginBody)
+			.andExpect(status().isUnauthorized)
+			.andExpect(jsonPath("$.error.code").value("AUTH-001"))
+			.andExpect(jsonPath("$.data").value(nullValue()))
+			.andReturn().response.contentAsString
+
+		assertFalse(body.contains("Abcdef1!"))
+	}
+
+	@Test
+	fun `W9 빈 필드는 400 COMMON-001 누락과 깨진 JSON은 400 COMMON-002이고 서비스를 호출하지 않는다`() {
+		listOf(
+			"""{"email":"","password":"Abcdef1!"}""",
+			"""{"email":"a@b.com","password":"  "}""",
+		).forEach { login(it).andExpect(status().isBadRequest).andExpect(jsonPath("$.error.code").value("COMMON-001")) }
+		listOf("""{"email":"a@b.com"}""", """{"email":""").forEach {
+			login(it).andExpect(status().isBadRequest).andExpect(jsonPath("$.error.code").value("COMMON-002"))
+		}
+
+		verifyNoInteractions(loginService)
+	}
+
+	@Test
+	fun `W10 me는 request attribute의 인증 사용자를 반환한다`() {
+		mockMvc.perform(
+			get("/api/v1/auth/me")
+				.requestAttr(AuthRequestAttributes.AUTHENTICATED_USER, AuthenticatedUser(7, "a@b.com")),
+		)
+			.andExpect(status().isOk)
+			.andExpect(jsonPath("$.data.userId").value(7))
+			.andExpect(jsonPath("$.data.email").value("a@b.com"))
+			.andExpect(jsonPath("$.data.name").doesNotExist())
+	}
+
+	@Test
+	fun `W11 GET login은 405 COMMON-003`() {
+		mockMvc.perform(get("/api/v1/auth/login")).andExpect(status().isMethodNotAllowed)
 			.andExpect(jsonPath("$.error.code").value("COMMON-003"))
 	}
 }

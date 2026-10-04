@@ -6,3 +6,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
+lingo:
+  auth:
+    jwt:
+      secret: test-secret-test-secret-test-secret-32b
+      access-ttl-seconds: 3600

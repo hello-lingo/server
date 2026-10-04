@@ -1,6 +1,7 @@
 package com.lingo.application.user
 
 import com.lingo.application.user.port.out.PasswordEncoderPort
+import com.lingo.application.user.port.out.TokenProviderPort
 import com.lingo.application.user.port.out.UserRepositoryPort
 import com.lingo.domain.user.Email
 import com.lingo.domain.user.RawPassword
@@ -9,6 +10,8 @@ import com.lingo.domain.user.User
 class FakeUserStore : UserRepositoryPort {
 	val users = mutableListOf<User>()
 	var existsCalls = 0
+	var findCalls = 0
+	var findFailure: RuntimeException? = null
 	var saveCalls = 0
 	var saveFailure: RuntimeException? = null
 	private var sequence = 0L
@@ -25,13 +28,36 @@ class FakeUserStore : UserRepositoryPort {
 		existsCalls++
 		return users.any { it.email == email }
 	}
+
+	override fun findByEmail(email: Email): User? {
+		findCalls++
+		findFailure?.let { throw it }
+		return users.firstOrNull { it.email == email }
+	}
 }
 
 class RecordingPasswordEncoder : PasswordEncoderPort {
 	val received = mutableListOf<String>()
+	val matchedHashes = mutableListOf<String>()
 
 	override fun encode(raw: RawPassword): String {
 		received += raw.value
 		return "encoded:${raw.value}".reversed()
 	}
+
+	override fun matches(raw: String, hash: String): Boolean {
+		matchedHashes += hash
+		return "encoded:$raw".reversed() == hash
+	}
+}
+
+class FakeTokenProvider : TokenProviderPort {
+	val issuedFor = mutableListOf<User>()
+
+	override fun issue(user: User): IssuedAccessToken {
+		issuedFor += user
+		return IssuedAccessToken("token-for-${user.id}", 3600)
+	}
+
+	override fun verify(token: String): AuthenticatedUser? = null
 }

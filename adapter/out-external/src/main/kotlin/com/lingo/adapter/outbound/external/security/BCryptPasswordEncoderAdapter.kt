@@ -11,4 +11,6 @@ class BCryptPasswordEncoderAdapter : PasswordEncoderPort {
 	private val encoder = BCryptPasswordEncoder()
 
 	override fun encode(raw: RawPassword): String = encoder.encode(raw.value)!!
+
+	override fun matches(raw: String, hash: String): Boolean = encoder.matches(raw, hash)
 }

@@ -1,6 +1,7 @@
 package com.lingo.adapter.inbound.web.common
 
 import com.lingo.application.user.DuplicateEmailException
+import com.lingo.application.user.InvalidCredentialsException
 import com.lingo.domain.user.InvalidEmailException
 import com.lingo.domain.user.InvalidNameException
 import com.lingo.domain.user.InvalidPasswordException
@@ -32,6 +33,7 @@ class ExceptionProbeController {
 	@GetMapping("/probe/throw")
 	fun throwing(@RequestParam type: String): String = throw when (type) {
 		"duplicate" -> DuplicateEmailException()
+		"credentials" -> InvalidCredentialsException()
 		"password" -> InvalidPasswordException("정책 위반")
 		"email" -> InvalidEmailException("이메일 위반")
 		"name" -> InvalidNameException("이름 위반")
@@ -61,6 +63,11 @@ class GlobalExceptionHandlerTest @Autowired constructor(
 	@Test
 	fun `H1 이메일 중복은 409 USER-001`() {
 		probe("duplicate").expectError(409, "USER-001", "이미 가입된 이메일입니다.")
+	}
+
+	@Test
+	fun `H1-2 인증 실패는 401 AUTH-001`() {
+		probe("credentials").expectError(401, "AUTH-001", "이메일 또는 비밀번호가 올바르지 않습니다.")
 	}
 
 	@Test
