@@ -9,6 +9,7 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
+import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActions
@@ -45,6 +46,7 @@ class ExceptionProbeController {
 }
 
 @WebMvcTest(ExceptionProbeController::class)
+@Import(PermitAllSecurityConfig::class)
 class GlobalExceptionHandlerTest @Autowired constructor(
 	private val mockMvc: MockMvc,
 ) {

@@ -1,6 +1,5 @@
 package com.lingo
 
-import com.lingo.adapter.inbound.web.common.AuthRequestAttributes
 import com.lingo.application.user.model.AuthenticatedUser
 import com.lingo.application.user.model.IssuedAccessJwt
 import com.lingo.application.user.port.out.JwtProviderPort
@@ -46,24 +45,22 @@ class JwtAuthenticationFilterTest {
 	}
 
 	@Test
-	fun `F1 유효한 Bearer 토큰이면 인증 정보와 request attribute가 세팅되고 체인이 진행된다`() {
-		val (request, chain) = run("Bearer valid")
+	fun `F1 유효한 Bearer 토큰이면 인증 정보가 세팅되고 체인이 진행된다`() {
+		val (_, chain) = run("Bearer valid")
 
 		assertEquals(true, chain.invoked)
 		val authentication = assertNotNull(chain.authentication as? org.springframework.security.core.Authentication)
 		assertEquals(user, authentication.principal)
 		assertEquals(listOf("ROLE_USER"), authentication.authorities.map { it.authority })
-		assertEquals(user, request.getAttribute(AuthRequestAttributes.AUTHENTICATED_USER))
 	}
 
 	@Test
 	fun `F2 헤더 없음 Basic 빈 토큰 검증 실패는 인증을 세팅하지 않고 체인은 진행된다`() {
 		listOf(null, "Basic abc", "Bearer ", "Bearer invalid").forEach { header ->
-			val (request, chain) = run(header)
+			val (_, chain) = run(header)
 
 			assertEquals(true, chain.invoked, header)
 			assertNull(chain.authentication, header)
-			assertNull(request.getAttribute(AuthRequestAttributes.AUTHENTICATED_USER), header)
 		}
 	}
 

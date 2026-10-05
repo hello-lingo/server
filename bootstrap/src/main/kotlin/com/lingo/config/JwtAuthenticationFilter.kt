@@ -1,6 +1,5 @@
 package com.lingo.config
 
-import com.lingo.adapter.inbound.web.common.AuthRequestAttributes
 import com.lingo.application.user.port.out.JwtProviderPort
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
@@ -12,7 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.filter.OncePerRequestFilter
 
 /**
- * Bearer 토큰을 검증해 SecurityContext와 request attribute에 인증 사용자를 심는다.
+ * Bearer 토큰을 검증해 SecurityContext에 인증 사용자를 심는다.
  * 토큰이 없거나 유효하지 않으면 아무것도 세팅하지 않고 체인을 진행한다(차단은 AuthenticationEntryPoint 몫).
  * SecurityConfig에서만 등록하므로 빈으로 만들지 않는다.
  */
@@ -25,7 +24,6 @@ class JwtAuthenticationFilter(
 			extractToken(request)?.let(tokenProviderPort::verify)?.let { user ->
 				val authentication = UsernamePasswordAuthenticationToken(user, null, listOf(SimpleGrantedAuthority(ROLE_USER)))
 				SecurityContextHolder.getContext().authentication = authentication
-				request.setAttribute(AuthRequestAttributes.AUTHENTICATED_USER, user)
 			}
 			chain.doFilter(request, response)
 		} finally {

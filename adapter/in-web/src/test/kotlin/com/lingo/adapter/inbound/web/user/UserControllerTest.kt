@@ -1,6 +1,6 @@
 package com.lingo.adapter.inbound.web.user
 
-import com.lingo.adapter.inbound.web.common.AuthRequestAttributes
+import com.lingo.adapter.inbound.web.common.PermitAllSecurityConfig
 import com.lingo.application.user.model.AuthenticatedUser
 import com.lingo.application.user.exception.DuplicateEmailException
 import com.lingo.application.user.exception.InvalidCredentialsException
@@ -18,7 +18,10 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoInteractions
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
+import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -30,6 +33,7 @@ import kotlin.test.Test
 import kotlin.test.assertFalse
 
 @WebMvcTest(UserController::class)
+@Import(PermitAllSecurityConfig::class)
 class UserControllerTest @Autowired constructor(
 	private val mockMvc: MockMvc,
 ) {
@@ -180,10 +184,10 @@ class UserControllerTest @Autowired constructor(
 	}
 
 	@Test
-	fun `W10 me는 request attribute의 인증 사용자를 반환한다`() {
+	fun `W10 me는 SecurityContext의 인증 사용자를 반환한다`() {
 		mockMvc.perform(
 			get("/api/v1/auth/me")
-				.requestAttr(AuthRequestAttributes.AUTHENTICATED_USER, AuthenticatedUser(7, "a@b.com")),
+				.with(authentication(UsernamePasswordAuthenticationToken(AuthenticatedUser(7, "a@b.com"), null, emptyList()))),
 		)
 			.andExpect(status().isOk)
 			.andExpect(jsonPath("$.data.userId").value(7))
