@@ -1,7 +1,6 @@
 package com.lingo.adapter.outbound.external.security
 
-import com.lingo.domain.user.Email
-import com.lingo.domain.user.User
+import com.lingo.application.user.model.AuthenticatedUser
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
@@ -19,7 +18,7 @@ class JwtProviderTest {
 
 	private val secret = "test-secret-test-secret-test-secret-32b"
 	private val now = Instant.parse("2026-01-01T00:00:00Z")
-	private val user = User(id = 7, email = Email.of("a@b.com"), passwordHash = "\$2a\$10\$secrethash", name = "홍길동")
+	private val user = AuthenticatedUser(userId = 7, email = "a@b.com")
 
 	private fun clockAt(instant: Instant) = Clock.fixed(instant, ZoneOffset.UTC)
 

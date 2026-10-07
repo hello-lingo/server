@@ -1,5 +1,6 @@
 package com.lingo.application.user.usecase
 
+import com.lingo.application.user.model.AuthenticatedUser
 import com.lingo.application.user.exception.InvalidCredentialsException
 import com.lingo.application.user.port.out.PasswordEncoderPort
 import com.lingo.application.user.port.out.JwtProviderPort
@@ -27,7 +28,9 @@ class LoginService(
 		if (user == null || !passwordMatches) {
 			throw InvalidCredentialsException()
 		}
-		val issued = tokenProviderPort.issue(user)
+		val issued = tokenProviderPort.issue(
+			AuthenticatedUser(requireNotNull(user.id) { "저장되지 않은 사용자에게 토큰을 발급할 수 없습니다." }, user.email.value),
+		)
 		return LoginResult(accessToken = issued.token, expiresIn = issued.expiresIn)
 	}
 

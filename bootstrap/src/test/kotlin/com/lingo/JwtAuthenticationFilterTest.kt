@@ -4,7 +4,6 @@ import com.lingo.application.user.model.AuthenticatedUser
 import com.lingo.application.user.model.IssuedAccessJwt
 import com.lingo.application.user.port.out.JwtProviderPort
 import com.lingo.config.JwtAuthenticationFilter
-import com.lingo.domain.user.User
 import org.springframework.mock.web.MockFilterChain
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
@@ -19,7 +18,7 @@ class JwtAuthenticationFilterTest {
 
 	private val user = AuthenticatedUser(7, "a@b.com")
 	private val tokens = object : JwtProviderPort {
-		override fun issue(user: User): IssuedAccessJwt = error("unused")
+		override fun issue(principal: AuthenticatedUser): IssuedAccessJwt = error("unused")
 		override fun verify(token: String): AuthenticatedUser? = if (token == "valid") user else null
 	}
 	private val filter = JwtAuthenticationFilter(tokens)

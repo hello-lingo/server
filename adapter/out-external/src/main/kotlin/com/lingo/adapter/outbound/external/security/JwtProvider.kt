@@ -3,7 +3,6 @@ package com.lingo.adapter.outbound.external.security
 import com.lingo.application.user.model.AuthenticatedUser
 import com.lingo.application.user.model.IssuedAccessJwt
 import com.lingo.application.user.port.out.JwtProviderPort
-import com.lingo.domain.user.User
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
@@ -28,12 +27,11 @@ class JwtProvider(
 		.clock { Date.from(clock.instant()) }
 		.build()
 
-	override fun issue(user: User): IssuedAccessJwt {
-		val userId = requireNotNull(user.id) { "id가 없는 사용자에게 토큰을 발급할 수 없습니다." }
+	override fun issue(principal: AuthenticatedUser): IssuedAccessJwt {
 		val issuedAt = clock.instant()
 		val token = Jwts.builder()
-			.subject(userId.toString())
-			.claim(EMAIL_CLAIM, user.email.value)
+			.subject(principal.userId.toString())
+			.claim(EMAIL_CLAIM, principal.email)
 			.issuedAt(Date.from(issuedAt))
 			.expiration(Date.from(issuedAt.plusSeconds(accessTtlSeconds)))
 			.signWith(key)

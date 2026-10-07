@@ -54,11 +54,11 @@ class RecordingPasswordEncoder : PasswordEncoderPort {
 }
 
 class FakeTokenProvider : JwtProviderPort {
-	val issuedFor = mutableListOf<User>()
+	val issuedFor = mutableListOf<AuthenticatedUser>()
 
-	override fun issue(user: User): IssuedAccessJwt {
-		issuedFor += user
-		return IssuedAccessJwt("token-for-${user.id}", 3600)
+	override fun issue(principal: AuthenticatedUser): IssuedAccessJwt {
+		issuedFor += principal
+		return IssuedAccessJwt("token-for-${principal.userId}", 3600)
 	}
 
 	override fun verify(token: String): AuthenticatedUser? = null
