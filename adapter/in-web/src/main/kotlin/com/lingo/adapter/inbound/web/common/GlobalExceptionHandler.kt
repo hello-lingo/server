@@ -27,8 +27,8 @@ class GlobalExceptionHandler {
 		if (e.cause == null) {
 			log.info(format, *args)
 		} else {
-			// 자리표시자보다 인자가 하나 많고 Throwable이면 SLF4J가 스택 트레이스로 출력한다.
-			// 자리표시자를 늘리면 cause가 {}에 소비되어 스택 트레이스가 사라진다 (H16이 고정)
+			// 마지막 인자가 Throwable이면 자리표시자 수와 관계없이 스택 트레이스로 출력된다.
+			// cause는 반드시 마지막 인자로 그대로 넘긴다. 문자열로 바꾸면 스택 트레이스가 사라진다 (H16이 고정)
 			log.warn(format, *args, e.cause)
 		}
 		return respond(errorCode, errorCode.message, e.details)

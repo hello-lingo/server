@@ -176,7 +176,7 @@ class GlobalExceptionHandlerTest @Autowired constructor(
 		val lines = output.out.lines()
 		val line = lines.single { it.contains("[USER-001 DUPLICATE_EMAIL]") }
 		assertTrue(line.contains("WARN"), line)
-		assertTrue(line.endsWith("details=null"), line) // cause가 {} 자리표시자에 소비되지 않았다 (R9)
+		assertTrue(line.endsWith("details=null"), line) // 로그 형식이 그대로다 (자리표시자를 늘리면 `{}`가 글자로 남아 실패)
 		assertTrue(lines.any { it == "java.lang.IllegalStateException: 원인-예외" }, output.out)
 		assertTrue(lines.any { it.startsWith("	at ") }, output.out)
 	}
