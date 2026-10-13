@@ -2,7 +2,7 @@ package com.lingo.adapter.inbound.web.common
 
 import com.lingo.application.user.exception.DuplicateEmailException
 import com.lingo.application.user.exception.InvalidCredentialsException
-import com.lingo.domain.user.DomainException
+import com.lingo.domain.common.DomainException
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
