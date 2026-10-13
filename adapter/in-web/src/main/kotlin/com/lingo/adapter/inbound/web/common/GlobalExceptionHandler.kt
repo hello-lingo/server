@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.HandlerMethodValidationException
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
+import org.springframework.web.multipart.MaxUploadSizeExceededException
 import org.springframework.web.multipart.support.MissingServletRequestPartException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 
@@ -96,6 +97,13 @@ class GlobalExceptionHandler {
 	@ExceptionHandler(NoResourceFoundException::class)
 	fun handleNoResource(e: NoResourceFoundException, request: HttpServletRequest): ResponseEntity<ApiResponse<Nothing>> =
 		respondClientError(ErrorCode.NOT_FOUND, e, request)
+
+	// 파일 하나가 spring.servlet.multipart.max-file-size(또는 요청 전체가 max-request-size)를 넘었을 때
+	@ExceptionHandler(MaxUploadSizeExceededException::class)
+	fun handleMaxUploadSize(e: MaxUploadSizeExceededException, request: HttpServletRequest): ResponseEntity<ApiResponse<Nothing>> {
+		logClientError(ErrorCode.FILE_TOO_LARGE, request, "MaxUploadSizeExceededException")
+		return respond(ErrorCode.FILE_TOO_LARGE, details = mapOf("maxSizeMb" to UploadLimits.MAX_FILE_SIZE_MB))
+	}
 
 	@ExceptionHandler(Exception::class)
 	fun handleUnexpected(e: Exception, request: HttpServletRequest): ResponseEntity<ApiResponse<Nothing>> {

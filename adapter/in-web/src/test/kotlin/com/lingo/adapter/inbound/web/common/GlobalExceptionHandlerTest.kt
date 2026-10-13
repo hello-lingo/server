@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MaxUploadSizeExceededException
 import org.springframework.web.multipart.support.MissingServletRequestPartException
 import org.hamcrest.Matchers.aMapWithSize
 import org.hamcrest.Matchers.hasKey
@@ -72,6 +73,7 @@ class ExceptionProbeController {
 		"multi" -> invalidBody(FieldError("probeBody", "name", "나 메시지"), FieldError("probeBody", "name", "가 메시지"))
 		"part" -> MissingServletRequestPartException("file")
 		"notAcceptable" -> HttpMediaTypeNotAcceptableException(listOf(MediaType.APPLICATION_JSON)) // 406, 처리 메서드 없음 → 안전장치
+		"upload" -> MaxUploadSizeExceededException(10L * 1024 * 1024)
 		else -> IllegalStateException("secret-internal-detail")
 	}
 
@@ -209,6 +211,17 @@ class GlobalExceptionHandlerTest @Autowired constructor(
 			.andExpect(jsonPath("$.error.details.fieldErrors[0]").value(aMapWithSize<String, Any?>(2))) // field·reason만, 입력값 없음
 			.andExpect(jsonPath("$.error.details.fieldErrors[0].field").value("name"))
 			.andExpect(jsonPath("$.error.details.fieldErrors[0].reason").value("필수 입력 항목입니다."))
+	}
+
+	@Test
+	fun `H13 업로드 한도 초과는 413 COMMON-007이고 details에 최대 크기(MB)를 싣고 INFO로 남긴다`(output: CapturedOutput) {
+		probe("upload")
+			.expectError(413, "COMMON-007", "파일 크기는 10MB를 넘을 수 없습니다.")
+			.andExpect(jsonPath("$.error.details").value(aMapWithSize<String, Any?>(1)))
+			.andExpect(jsonPath("$.error.details.maxSizeMb").value(10))
+
+		val line = output.out.lines().single { it.contains("[COMMON-007] GET /probe/throw - MaxUploadSizeExceededException") }
+		assertTrue(line.contains("INFO"), line)
 	}
 
 	@Test

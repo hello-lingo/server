@@ -18,6 +18,8 @@ enum class ErrorCode(val code: String, val message: String, val status: HttpStat
 	UNSUPPORTED_MEDIA_TYPE("COMMON-004", "지원하지 않는 미디어 타입입니다.", HttpStatus.UNSUPPORTED_MEDIA_TYPE),
 	NOT_FOUND("COMMON-005", "요청한 리소스를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 	INTERNAL_ERROR("COMMON-006", "서버 내부 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+	/** details: { maxSizeMb: Int } */
+	FILE_TOO_LARGE("COMMON-007", "파일 크기는 10MB를 넘을 수 없습니다.", HttpStatus.CONTENT_TOO_LARGE),
 	;
 
 	companion object {

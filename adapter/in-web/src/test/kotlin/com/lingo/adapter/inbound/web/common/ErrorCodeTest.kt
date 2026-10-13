@@ -38,6 +38,7 @@ class ErrorCodeTest {
 			ErrorCode.UNSUPPORTED_MEDIA_TYPE to ("COMMON-004" to HttpStatus.UNSUPPORTED_MEDIA_TYPE),
 			ErrorCode.NOT_FOUND to ("COMMON-005" to HttpStatus.NOT_FOUND),
 			ErrorCode.INTERNAL_ERROR to ("COMMON-006" to HttpStatus.INTERNAL_SERVER_ERROR),
+			ErrorCode.FILE_TOO_LARGE to ("COMMON-007" to HttpStatus.CONTENT_TOO_LARGE),
 		)
 
 		assertEquals(expected.keys, ErrorCode.entries.toSet())
