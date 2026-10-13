@@ -12,6 +12,7 @@ import com.lingo.application.user.usecase.SignUpResult
 import com.lingo.application.user.usecase.SignUpService
 import com.lingo.domain.user.InvalidEmailException
 import com.lingo.domain.user.InvalidPasswordException
+import com.lingo.domain.user.Role
 import org.hamcrest.Matchers.nullValue
 import org.mockito.BDDMockito.given
 import org.mockito.Mockito.verify
@@ -201,7 +202,7 @@ class UserControllerTest @Autowired constructor(
 	fun `W10 me는 SecurityContext의 인증 사용자를 반환한다`() {
 		mockMvc.perform(
 			get("/api/v1/auth/me")
-				.with(authentication(UsernamePasswordAuthenticationToken(AuthenticatedUser(7, "a@b.com"), null, emptyList()))),
+				.with(authentication(UsernamePasswordAuthenticationToken(AuthenticatedUser(7, "a@b.com", Role.USER), null, emptyList()))),
 		)
 			.andExpect(status().isOk)
 			.andExpect(jsonPath("$.data.userId").value(7))

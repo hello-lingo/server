@@ -4,6 +4,7 @@ import com.lingo.application.user.model.AuthenticatedUser
 import com.lingo.application.user.model.IssuedAccessJwt
 import com.lingo.application.user.port.out.JwtProviderPort
 import com.lingo.config.JwtAuthenticationFilter
+import com.lingo.domain.user.Role
 import org.springframework.mock.web.MockFilterChain
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
@@ -16,10 +17,16 @@ import kotlin.test.assertNull
 
 class JwtAuthenticationFilterTest {
 
-	private val user = AuthenticatedUser(7, "a@b.com")
+	private val user = AuthenticatedUser(7, "a@b.com", Role.USER)
+	private val admin = AuthenticatedUser(8, "admin@b.com", Role.ADMIN)
 	private val tokens = object : JwtProviderPort {
 		override fun issue(principal: AuthenticatedUser): IssuedAccessJwt = error("unused")
-		override fun verify(token: String): AuthenticatedUser? = if (token == "valid") user else null
+		override fun verify(token: String): AuthenticatedUser? =
+			when (token) {
+				"valid" -> user
+				"admin" -> admin
+				else -> null
+			}
 	}
 	private val filter = JwtAuthenticationFilter(tokens)
 
@@ -70,5 +77,14 @@ class JwtAuthenticationFilterTest {
 
 		val (_, second) = run(null)
 		assertNull(second.authentication)
+	}
+
+	@Test
+	fun `F4 ADMIN 사용자의 토큰이면 권한이 ROLE_ADMIN이다`() {
+		val (_, chain) = run("Bearer admin")
+
+		val authentication = assertNotNull(chain.authentication as? org.springframework.security.core.Authentication)
+		assertEquals(admin, authentication.principal)
+		assertEquals(listOf("ROLE_ADMIN"), authentication.authorities.map { it.authority })
 	}
 }

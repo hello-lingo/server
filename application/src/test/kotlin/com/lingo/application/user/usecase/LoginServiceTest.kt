@@ -3,6 +3,7 @@ package com.lingo.application.user.usecase
 import com.lingo.application.user.model.IssuedAccessJwt
 import com.lingo.application.user.exception.InvalidCredentialsException
 import com.lingo.domain.user.Email
+import com.lingo.domain.user.Role
 import com.lingo.domain.user.User
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -89,5 +90,15 @@ class LoginServiceTest {
 		store.findFailure = IllegalStateException("db down")
 
 		assertFailsWith<IllegalStateException> { service.login(LoginCommand("a@b.com", "Abcdef1!")) }
+	}
+
+	@Test
+	fun `LS-R1 로그인한 사용자의 role이 토큰 발급에 전달된다`() {
+		store.users.clear()
+		store.users += User.signUp(Email.of("a@b.com"), "encoded:Abcdef1!".reversed(), "홍길동").copy(id = 1, role = Role.ADMIN)
+
+		service.login(LoginCommand("a@b.com", "Abcdef1!"))
+
+		assertEquals(Role.ADMIN, tokens.issuedFor.single().role)
 	}
 }

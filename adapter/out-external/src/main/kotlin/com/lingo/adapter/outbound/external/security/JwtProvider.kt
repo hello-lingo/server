@@ -3,6 +3,7 @@ package com.lingo.adapter.outbound.external.security
 import com.lingo.application.user.model.AuthenticatedUser
 import com.lingo.application.user.model.IssuedAccessJwt
 import com.lingo.application.user.port.out.JwtProviderPort
+import com.lingo.domain.user.Role
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
@@ -32,6 +33,7 @@ class JwtProvider(
 		val token = Jwts.builder()
 			.subject(principal.userId.toString())
 			.claim(EMAIL_CLAIM, principal.email)
+			.claim(ROLE_CLAIM, principal.role.name)
 			.issuedAt(Date.from(issuedAt))
 			.expiration(Date.from(issuedAt.plusSeconds(accessTtlSeconds)))
 			.signWith(key)
@@ -44,15 +46,20 @@ class JwtProvider(
 			val claims = parser.parseSignedClaims(token).payload
 			val userId = claims.subject?.toLongOrNull()
 			val email = claims.get(EMAIL_CLAIM, String::class.java)
-			if (userId == null || email == null) null else AuthenticatedUser(userId, email)
+			val role = claims.get(ROLE_CLAIM, String::class.java)?.let(::roleOf)
+			if (userId == null || email == null || role == null) null else AuthenticatedUser(userId, email, role)
 		} catch (e: JwtException) {
 			null
 		} catch (e: IllegalArgumentException) {
 			null
 		}
 
+	// Role.valueOf는 모르는 값에 예외를 던지므로 이름으로 찾아 없으면 null
+	private fun roleOf(name: String): Role? = Role.entries.firstOrNull { it.name == name }
+
 	private companion object {
 		const val EMAIL_CLAIM = "email"
+		const val ROLE_CLAIM = "role"
 		const val MIN_SECRET_BYTES = 32
 	}
 }

@@ -2,6 +2,7 @@ package com.lingo
 
 import com.lingo.adapter.outbound.external.security.JwtProvider
 import com.lingo.application.user.model.AuthenticatedUser
+import com.lingo.domain.user.Role
 import com.lingo.support.DatabaseCleaner
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -105,9 +106,9 @@ class LoginIntegrationTest @Autowired constructor(
 	fun `L5 토큰 없음 위조 만료 토큰은 me에서 401 AUTH-002 JSON이다`() {
 		signUp()
 		val expired = JwtProvider(secret, 3600, Clock.fixed(Instant.parse("2020-01-01T00:00:00Z"), ZoneOffset.UTC))
-			.issue(AuthenticatedUser(7, "a@b.com")).token
+			.issue(AuthenticatedUser(7, "a@b.com", Role.USER)).token
 		val forged = JwtProvider("another-secret-another-secret-32bytes!", 3600, Clock.systemUTC())
-			.issue(AuthenticatedUser(7, "a@b.com")).token
+			.issue(AuthenticatedUser(7, "a@b.com", Role.USER)).token
 
 		listOf(null, "Bearer $forged", "Bearer $expired", "Bearer garbage").forEach { header ->
 			mockMvc.perform(get("/api/v1/auth/me").apply { header?.let { header("Authorization", it) } })

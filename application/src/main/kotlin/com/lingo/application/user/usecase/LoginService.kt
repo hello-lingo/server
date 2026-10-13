@@ -29,7 +29,7 @@ class LoginService(
 			throw InvalidCredentialsException()
 		}
 		val issued = tokenProviderPort.issue(
-			AuthenticatedUser(requireNotNull(user.id) { "저장되지 않은 사용자에게 토큰을 발급할 수 없습니다." }, user.email.value),
+			AuthenticatedUser(requireNotNull(user.id) { "저장되지 않은 사용자에게 토큰을 발급할 수 없습니다." }, user.email.value, user.role),
 		)
 		return LoginResult(accessToken = issued.token, expiresIn = issued.expiresIn)
 	}
