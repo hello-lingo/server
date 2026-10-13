@@ -1,5 +1,6 @@
 package com.lingo.adapter.inbound.web.common
 
+import com.lingo.application.common.error.UserErrorType
 import org.springframework.http.HttpStatus
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -43,5 +44,12 @@ class ErrorCodeTest {
 			assertEquals(spec.first, errorCode.code, errorCode.name)
 			assertEquals(spec.second, errorCode.status, errorCode.name)
 		}
+	}
+
+	@Test
+	fun `EC4 ErrorType은 대응하는 ErrorCode로 연결되고 UserErrorType 전부가 연결된다`() {
+		assertEquals(ErrorCode.DUPLICATE_EMAIL, ErrorCode.from(UserErrorType.DUPLICATE_EMAIL))
+		assertEquals(ErrorCode.INVALID_CREDENTIALS, ErrorCode.from(UserErrorType.INVALID_CREDENTIALS))
+		UserErrorType.entries.forEach { ErrorCode.from(it) }
 	}
 }
