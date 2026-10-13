@@ -10,6 +10,7 @@ enum class ErrorCode(val code: String, val message: String, val status: HttpStat
 	DUPLICATE_EMAIL("USER-001", "이미 가입된 이메일입니다.", HttpStatus.CONFLICT),
 	INVALID_CREDENTIALS("AUTH-001", "이메일 또는 비밀번호가 올바르지 않습니다.", HttpStatus.UNAUTHORIZED),
 	UNAUTHORIZED("AUTH-002", "인증이 필요합니다.", HttpStatus.UNAUTHORIZED),
+	FORBIDDEN("AUTH-003", "접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
 	/** details: { fieldErrors: [{ field: String?, reason: String }] } */
 	VALIDATION_FAILED("COMMON-001", "요청 값이 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
 	INVALID_REQUEST("COMMON-002", "잘못된 요청입니다.", HttpStatus.BAD_REQUEST),
