@@ -8,6 +8,7 @@ import com.lingo.domain.user.InvalidEmailException
 import com.lingo.domain.user.InvalidNameException
 import com.lingo.domain.user.InvalidPasswordException
 import jakarta.validation.Valid
+import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,12 +27,16 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.FieldError
 import org.springframework.validation.ObjectError
+import org.springframework.web.HttpMediaTypeNotAcceptableException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.support.MissingServletRequestPartException
 import org.hamcrest.Matchers.aMapWithSize
 import org.hamcrest.Matchers.hasKey
 import org.hamcrest.Matchers.nullValue
@@ -65,6 +70,8 @@ class ExceptionProbeController {
 			ObjectError("probeBody", "전체 오류"),
 		)
 		"multi" -> invalidBody(FieldError("probeBody", "name", "나 메시지"), FieldError("probeBody", "name", "가 메시지"))
+		"part" -> MissingServletRequestPartException("file")
+		"notAcceptable" -> HttpMediaTypeNotAcceptableException(listOf(MediaType.APPLICATION_JSON)) // 406, 처리 메서드 없음 → 안전장치
 		else -> IllegalStateException("secret-internal-detail")
 	}
 
@@ -77,6 +84,30 @@ class ExceptionProbeController {
 
 	@PostMapping("/probe/body", consumes = [MediaType.APPLICATION_JSON_VALUE])
 	fun body(@Valid @RequestBody body: ProbeBody): String = body.name
+
+	@GetMapping("/probe/typed/{id}")
+	fun typed(@PathVariable id: Long): Long = id
+
+	@GetMapping("/probe/param")
+	fun param(@RequestParam("q") q: String): String = q
+
+	@GetMapping("/probe/header")
+	fun header(@RequestHeader("X-Probe") h: String): String = h
+
+	// 클래스에 @Validated가 없어야 Spring MVC 내장 메서드 검증이 HandlerMethodValidationException을 던진다
+	// (@Validated가 있으면 AOP 검증이 먼저 돌아 ConstraintViolationException → 500)
+	@GetMapping("/probe/min")
+	fun min(@RequestParam("n") @Min(value = 1, message = "1 이상이어야 합니다.") n: Int): Int = n
+
+	// 파라미터 제약과 @Valid 본문이 함께 있으면 본문 오류도 HandlerMethodValidationException으로 합쳐진다
+	@PostMapping("/probe/combo/{id}", consumes = [MediaType.APPLICATION_JSON_VALUE])
+	fun combo(
+		@PathVariable @Min(value = 1, message = "1 이상이어야 합니다.") id: Long,
+		@Valid @RequestBody body: ProbeBody,
+	): String = body.name
+
+	@GetMapping("/probe/json", produces = [MediaType.APPLICATION_JSON_VALUE])
+	fun json(): String = "{}"
 }
 
 @WebMvcTest(ExceptionProbeController::class)
@@ -231,5 +262,76 @@ class GlobalExceptionHandlerTest @Autowired constructor(
 			.andExpect(jsonPath("$.error.details.fieldErrors[0].reason").value("가 메시지"))
 			.andExpect(jsonPath("$.error.details.fieldErrors[1].field").value("name"))
 			.andExpect(jsonPath("$.error.details.fieldErrors[1].reason").value("나 메시지"))
+	}
+
+	@Test
+	fun `H17 도메인 예외는 코드·요청·예외 메시지를 INFO로 남긴다`(output: CapturedOutput) {
+		probe("email")
+
+		val line = output.out.lines().single { it.contains("[COMMON-002] GET /probe/throw - 이메일 위반") }
+		assertTrue(line.contains("INFO"), line)
+	}
+
+	@Test
+	fun `H18 검증 실패는 필드 이름만 INFO로 남긴다`(output: CapturedOutput) {
+		mockMvc.perform(post("/probe/body").contentType(MediaType.APPLICATION_JSON).content("""{"name":""}"""))
+
+		val line = output.out.lines().single { it.contains("[COMMON-001] POST /probe/body - fieldErrors=[name]") }
+		assertTrue(line.contains("INFO"), line)
+	}
+
+	@Test
+	fun `H19 경로 변수 타입이 맞지 않으면 400 COMMON-002`() {
+		mockMvc.perform(get("/probe/typed/abc")).expectError(400, "COMMON-002", "잘못된 요청입니다.")
+	}
+
+	@Test
+	fun `H20 필수 요청 파라미터가 없으면 400 COMMON-002`() {
+		mockMvc.perform(get("/probe/param")).expectError(400, "COMMON-002", "잘못된 요청입니다.")
+	}
+
+	@Test
+	fun `H21 메서드 파라미터 검증 실패는 400 COMMON-001이고 field는 파라미터 이름, 본문 인자 오류는 본문 필드 이름이다`() {
+		mockMvc.perform(get("/probe/min").param("n", "0"))
+			.expectError(400, "COMMON-001", "요청 값이 올바르지 않습니다.")
+			.andExpect(jsonPath("$.error.details.fieldErrors.length()").value(1))
+			.andExpect(jsonPath("$.error.details.fieldErrors[0]").value(aMapWithSize<String, Any?>(2)))
+			.andExpect(jsonPath("$.error.details.fieldErrors[0].field").value("n"))
+			.andExpect(jsonPath("$.error.details.fieldErrors[0].reason").value("1 이상이어야 합니다."))
+
+		// @Valid 본문 인자의 오류는 파라미터 이름(body)이 아니라 본문 필드 이름으로 (MethodArgumentNotValidException과 같은 계약)
+		mockMvc.perform(post("/probe/combo/0").contentType(MediaType.APPLICATION_JSON).content("""{"name":""}"""))
+			.expectError(400, "COMMON-001")
+			.andExpect(jsonPath("$.error.details.fieldErrors.length()").value(2))
+			.andExpect(jsonPath("$.error.details.fieldErrors[0].field").value("id"))
+			.andExpect(jsonPath("$.error.details.fieldErrors[0].reason").value("1 이상이어야 합니다."))
+			.andExpect(jsonPath("$.error.details.fieldErrors[1].field").value("name"))
+			.andExpect(jsonPath("$.error.details.fieldErrors[1].reason").value("필수 입력 항목입니다."))
+	}
+
+	@Test
+	fun `H22 필수 요청 헤더가 없으면 400 COMMON-002`() {
+		mockMvc.perform(get("/probe/header")).expectError(400, "COMMON-002", "잘못된 요청입니다.")
+	}
+
+	@Test
+	fun `H23 필수 multipart 파트가 없으면 400 COMMON-002`() {
+		probe("part").expectError(400, "COMMON-002", "잘못된 요청입니다.")
+	}
+
+	@Test
+	fun `H24 처리 메서드가 없는 Spring 4xx 예외는 그 상태 코드와 COMMON-002로 응답하고 INFO로 남긴다`(output: CapturedOutput) {
+		probe("notAcceptable").expectError(406, "COMMON-002", "잘못된 요청입니다.")
+
+		// 실제 협상 실패: Accept에 JSON이 없어도 에러 본문은 JSON으로 나간다
+		mockMvc.perform(get("/probe/json").accept(MediaType.TEXT_PLAIN))
+			.expectError(406, "COMMON-002", "잘못된 요청입니다.")
+
+		listOf("/probe/throw", "/probe/json").forEach { uri ->
+			val line = output.out.lines().single { it.contains("[COMMON-002] GET $uri - HttpMediaTypeNotAcceptableException") }
+			assertTrue(line.contains("INFO"), line)
+		}
+		assertFalse(output.out.contains("처리되지 않은 예외"), output.out)
+		assertFalse(output.out.contains("Failure in @ExceptionHandler"), output.out)
 	}
 }
