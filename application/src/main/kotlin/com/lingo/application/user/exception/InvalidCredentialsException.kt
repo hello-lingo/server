@@ -1,6 +1,9 @@
 package com.lingo.application.user.exception
 
+import com.lingo.application.common.error.ApplicationException
+import com.lingo.application.common.error.UserErrorType
+
 class InvalidCredentialsException(
-	message: String = "이메일 또는 비밀번호가 올바르지 않습니다.",
+	debugMessage: String? = null,
 	cause: Throwable? = null,
-) : RuntimeException(message, cause)
+) : ApplicationException(UserErrorType.INVALID_CREDENTIALS, debugMessage, cause)

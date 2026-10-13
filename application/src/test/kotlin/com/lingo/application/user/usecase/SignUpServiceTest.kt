@@ -68,7 +68,7 @@ class SignUpServiceTest {
 
 	@Test
 	fun `S5 저장 포트의 DuplicateEmailException은 그대로 전파된다`() {
-		val failure = DuplicateEmailException("race")
+		val failure = DuplicateEmailException()
 		store.saveFailure = failure
 
 		val thrown = assertFailsWith<DuplicateEmailException> { service.signUp(command) }

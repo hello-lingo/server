@@ -1,8 +1,8 @@
 package com.lingo.adapter.inbound.web.common
 
-import com.lingo.application.user.exception.DuplicateEmailException
-import com.lingo.application.user.exception.InvalidCredentialsException
+import com.lingo.application.common.error.ApplicationException
 import com.lingo.domain.common.DomainException
+import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
@@ -19,11 +19,20 @@ class GlobalExceptionHandler {
 
 	private val log = LoggerFactory.getLogger(javaClass)
 
-	@ExceptionHandler(DuplicateEmailException::class)
-	fun handleDuplicateEmail(): ResponseEntity<ApiResponse<Nothing>> = respond(ErrorCode.DUPLICATE_EMAIL)
-
-	@ExceptionHandler(InvalidCredentialsException::class)
-	fun handleInvalidCredentials(): ResponseEntity<ApiResponse<Nothing>> = respond(ErrorCode.INVALID_CREDENTIALS)
+	@ExceptionHandler(ApplicationException::class)
+	fun handleApplication(e: ApplicationException, request: HttpServletRequest): ResponseEntity<ApiResponse<Nothing>> {
+		val errorCode = ErrorCode.from(e.errorType)
+		val format = "[{} {}] {} {} - {} details={}"
+		val args = arrayOf(errorCode.code, e.errorType, request.method, request.requestURI, e.debugMessage ?: "-", e.details)
+		if (e.cause == null) {
+			log.info(format, *args)
+		} else {
+			// 자리표시자보다 인자가 하나 많고 Throwable이면 SLF4J가 스택 트레이스로 출력한다.
+			// 자리표시자를 늘리면 cause가 {}에 소비되어 스택 트레이스가 사라진다 (H16이 고정)
+			log.warn(format, *args, e.cause)
+		}
+		return respond(errorCode, errorCode.message, e.details)
+	}
 
 	@ExceptionHandler(DomainException::class)
 	fun handleDomain(e: DomainException): ResponseEntity<ApiResponse<Nothing>> =
