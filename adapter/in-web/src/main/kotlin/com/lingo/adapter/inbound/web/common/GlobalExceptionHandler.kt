@@ -4,6 +4,7 @@ import com.lingo.application.user.exception.DuplicateEmailException
 import com.lingo.application.user.exception.InvalidCredentialsException
 import com.lingo.domain.common.DomainException
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.HttpMediaTypeNotSupportedException
@@ -49,6 +50,11 @@ class GlobalExceptionHandler {
 		return respond(ErrorCode.INTERNAL_ERROR)
 	}
 
-	private fun respond(errorCode: ErrorCode, message: String = errorCode.message): ResponseEntity<ApiResponse<Nothing>> =
-		ResponseEntity.status(errorCode.status).body(ApiResponse.failure(errorCode, message))
+	private fun respond(
+		errorCode: ErrorCode,
+		message: String = errorCode.message,
+		details: Map<String, Any?>? = null,
+		status: HttpStatusCode = errorCode.status,
+	): ResponseEntity<ApiResponse<Nothing>> =
+		ResponseEntity.status(status).body(ApiResponse.failure(errorCode, message, details))
 }

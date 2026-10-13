@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.hamcrest.Matchers.hasKey
 import org.hamcrest.Matchers.nullValue
 import kotlin.test.Test
 import kotlin.test.assertFalse
@@ -118,5 +119,13 @@ class GlobalExceptionHandlerTest @Autowired constructor(
 			.andReturn().response.contentAsString
 
 		assertFalse(body.contains("secret-internal-detail"))
+	}
+
+	@Test
+	fun `H10 에러 응답에는 details 키가 null로 존재한다`() {
+		probe("duplicate")
+			.expectError(409, "USER-001")
+			.andExpect(jsonPath("$.error").value(hasKey("details")))
+			.andExpect(jsonPath("$.error.details").value(nullValue()))
 	}
 }

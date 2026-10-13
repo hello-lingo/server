@@ -12,7 +12,11 @@ data class ApiResponse<T> private constructor(
 	companion object {
 		fun <T> success(data: T): ApiResponse<T> = ApiResponse(true, data, null)
 
-		fun failure(errorCode: ErrorCode, message: String = errorCode.message): ApiResponse<Nothing> =
-			ApiResponse(false, null, ErrorBody(errorCode.code, message))
+		fun failure(
+			errorCode: ErrorCode,
+			message: String = errorCode.message,
+			details: Map<String, Any?>? = null,
+		): ApiResponse<Nothing> =
+			ApiResponse(false, null, ErrorBody(errorCode.code, message, details))
 	}
 }

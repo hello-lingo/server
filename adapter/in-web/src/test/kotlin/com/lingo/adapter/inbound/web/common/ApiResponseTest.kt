@@ -42,4 +42,19 @@ class ApiResponseTest {
 		assertEquals("COMMON-002", node["error"]["code"].asString())
 		assertEquals("커스텀", node["error"]["message"].asString())
 	}
+
+	@Test
+	fun `AR4 실패 응답은 details 키가 null로 존재한다`() {
+		val node = json(ApiResponse.failure(ErrorCode.DUPLICATE_EMAIL))
+
+		assertTrue(node["error"].has("details"))
+		assertTrue(node["error"]["details"].isNull)
+	}
+
+	@Test
+	fun `AR5 실패 응답은 details를 담는다`() {
+		val node = json(ApiResponse.failure(ErrorCode.INVALID_REQUEST, details = mapOf("remainingAttempts" to 4)))
+
+		assertEquals(4, node["error"]["details"]["remainingAttempts"].asInt())
+	}
 }
