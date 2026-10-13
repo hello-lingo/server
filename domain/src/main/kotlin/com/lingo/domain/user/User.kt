@@ -5,13 +5,14 @@ data class User(
 	val email: Email,
 	val passwordHash: String,
 	val name: String,
+	val role: Role,
 ) {
 
 	companion object {
 		private const val MAX_NAME_LENGTH = 50
 
 		fun signUp(email: Email, passwordHash: String, name: String): User =
-			User(id = null, email = email, passwordHash = passwordHash, name = validateName(name))
+			User(id = null, email = email, passwordHash = passwordHash, name = validateName(name), role = Role.USER)
 
 		/** 앞뒤 공백을 제거한 이름을 반환하고, 1~50자가 아니면 [InvalidNameException]을 던진다. */
 		fun validateName(name: String): String {

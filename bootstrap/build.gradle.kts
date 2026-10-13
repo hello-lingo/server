@@ -25,5 +25,6 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-websocket-test")
 	testImplementation("org.springframework:spring-jdbc")
+	testImplementation("org.flywaydb:flyway-core")
 	testRuntimeOnly("com.h2database:h2")
 }

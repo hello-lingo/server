@@ -22,7 +22,7 @@ class JwtAuthenticationFilter(
 	override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {
 		try {
 			extractToken(request)?.let(tokenProviderPort::verify)?.let { user ->
-				val authentication = UsernamePasswordAuthenticationToken(user, null, listOf(SimpleGrantedAuthority(ROLE_USER)))
+				val authentication = UsernamePasswordAuthenticationToken(user, null, listOf(SimpleGrantedAuthority("ROLE_${user.role.name}")))
 				SecurityContextHolder.getContext().authentication = authentication
 			}
 			chain.doFilter(request, response)
@@ -40,6 +40,5 @@ class JwtAuthenticationFilter(
 
 	private companion object {
 		const val BEARER_PREFIX = "Bearer "
-		const val ROLE_USER = "ROLE_USER"
 	}
 }

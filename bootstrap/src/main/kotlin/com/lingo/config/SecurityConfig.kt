@@ -24,9 +24,13 @@ class SecurityConfig {
 			.formLogin { it.disable() }
 			.httpBasic { it.disable() }
 			.sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
-			.exceptionHandling { it.authenticationEntryPoint(JsonAuthenticationEntryPoint(jsonMapper)) }
+			.exceptionHandling {
+				it.authenticationEntryPoint(JsonAuthenticationEntryPoint(jsonMapper))
+					.accessDeniedHandler(JsonAccessDeniedHandler(jsonMapper))
+			}
 			.authorizeHttpRequests {
 				it.requestMatchers(HttpMethod.POST, "/api/v1/auth/signup", "/api/v1/auth/login").permitAll()
+				it.requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 				it.anyRequest().authenticated()
 			}
 			.addFilterBefore(JwtAuthenticationFilter(tokenProviderPort), UsernamePasswordAuthenticationFilter::class.java)

@@ -4,8 +4,8 @@ import com.lingo.application.user.usecase.LoginCommand
 import jakarta.validation.constraints.NotBlank
 
 data class LoginRequest(
-	@field:NotBlank val email: String,
-	@field:NotBlank val password: String,
+	@field:NotBlank(message = "필수 입력 항목입니다.") val email: String,
+	@field:NotBlank(message = "필수 입력 항목입니다.") val password: String,
 ) {
 	fun toCommand() = LoginCommand(email = email, password = password)
 

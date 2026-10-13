@@ -45,4 +45,9 @@ class UserTest {
 		assertEquals(1L, copied.id)
 		assertNull(original.id)
 	}
+
+	@Test
+	fun `U5 signUp은 role을 USER로 정한다`() {
+		assertEquals(Role.USER, User.signUp(email, "hash", "홍길동").role)
+	}
 }

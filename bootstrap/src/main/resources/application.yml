@@ -8,7 +8,19 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
+  flyway:
+    baseline-on-migrate: true
+    baseline-version: 1
+  servlet:
+    multipart:
+      max-file-size: 10MB # UploadLimits.MAX_FILE_SIZE_MB와 같아야 한다 (UP3가 고정)
+      max-request-size: 11MB # 파일 10MB + 다른 파트·헤더 여유
+server:
+  tomcat:
+    # 한도를 넘은 요청의 남은 본문을 이만큼까지 읽고 버린 뒤 응답한다.
+    # 기본 2MB면 그보다 큰 초과 업로드는 연결이 끊겨 클라이언트가 413 응답을 받지 못한다 (UP2가 고정)
+    max-swallow-size: 20MB
 lingo:
   auth:
     jwt:
