@@ -3,6 +3,7 @@ package com.lingo
 import com.lingo.application.user.port.out.PasswordEncoderPort
 import com.lingo.application.user.port.out.JwtProviderPort
 import com.lingo.application.user.port.out.UserRepositoryPort
+import com.lingo.support.DatabaseCleaner
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -27,12 +28,13 @@ import kotlin.test.assertTrue
 class SignUpIntegrationTest @Autowired constructor(
 	private val mockMvc: MockMvc,
 	private val jdbcTemplate: JdbcTemplate,
+	private val databaseCleaner: DatabaseCleaner,
 	private val context: ApplicationContext,
 ) {
 
 	@BeforeEach
-	fun cleanUsers() {
-		jdbcTemplate.update("delete from users")
+	fun cleanDatabase() {
+		databaseCleaner.clean()
 	}
 
 	private fun signUp(email: String = "a@b.com", password: String = "Abcdef1!") =

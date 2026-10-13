@@ -2,13 +2,13 @@ package com.lingo
 
 import com.lingo.adapter.outbound.external.security.JwtProvider
 import com.lingo.application.user.model.AuthenticatedUser
+import com.lingo.support.DatabaseCleaner
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.http.MediaType
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActions
@@ -29,13 +29,13 @@ import kotlin.test.assertTrue
 @ActiveProfiles("test")
 class LoginIntegrationTest @Autowired constructor(
 	private val mockMvc: MockMvc,
-	private val jdbcTemplate: JdbcTemplate,
+	private val databaseCleaner: DatabaseCleaner,
 	@Value("\${lingo.auth.jwt.secret}") private val secret: String,
 ) {
 
 	@BeforeEach
-	fun cleanUsers() {
-		jdbcTemplate.update("delete from users")
+	fun cleanDatabase() {
+		databaseCleaner.clean()
 	}
 
 	private fun json(path: String, body: String, authorization: String? = null): ResultActions =
