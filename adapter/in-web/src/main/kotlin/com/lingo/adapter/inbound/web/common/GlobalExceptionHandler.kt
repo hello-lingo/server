@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.validation.BindingResult
 import org.springframework.web.HttpMediaTypeNotSupportedException
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -39,7 +40,8 @@ class GlobalExceptionHandler {
 		respond(ErrorCode.INVALID_REQUEST, e.message ?: ErrorCode.INVALID_REQUEST.message)
 
 	@ExceptionHandler(MethodArgumentNotValidException::class)
-	fun handleValidation(): ResponseEntity<ApiResponse<Nothing>> = respond(ErrorCode.VALIDATION_FAILED)
+	fun handleValidation(e: MethodArgumentNotValidException, request: HttpServletRequest): ResponseEntity<ApiResponse<Nothing>> =
+		respond(ErrorCode.VALIDATION_FAILED, details = fieldErrorsOf(e.bindingResult))
 
 	@ExceptionHandler(HttpMessageNotReadableException::class)
 	fun handleNotReadable(): ResponseEntity<ApiResponse<Nothing>> = respond(ErrorCode.INVALID_REQUEST)
@@ -66,4 +68,14 @@ class GlobalExceptionHandler {
 		status: HttpStatusCode = errorCode.status,
 	): ResponseEntity<ApiResponse<Nothing>> =
 		ResponseEntity.status(status).body(ApiResponse.failure(errorCode, message, details))
+
+	// 특정 필드에 속하지 않는 오류는 field = null, null 먼저 → field → reason 순. 입력값(rejectedValue)은 넣지 않는다
+	private fun fieldErrorsOf(result: BindingResult): Map<String, Any?> {
+		val global = result.globalErrors.map { FieldErrorItem(null, it.defaultMessage ?: "") }
+		val fields = result.fieldErrors.map { FieldErrorItem(it.field, it.defaultMessage ?: "") }
+		val sorted = (global + fields).sortedWith(compareBy(nullsFirst()) { it: FieldErrorItem -> it.field }.thenBy { it.reason })
+		return mapOf("fieldErrors" to sorted.map { mapOf("field" to it.field, "reason" to it.reason) })
+	}
+
+	private data class FieldErrorItem(val field: String?, val reason: String)
 }

@@ -15,6 +15,7 @@ import org.springframework.boot.test.system.CapturedOutput
 import org.springframework.boot.test.system.OutputCaptureExtension
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
 import org.springframework.context.annotation.Import
+import org.springframework.core.MethodParameter
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActions
@@ -22,18 +23,23 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.validation.BeanPropertyBindingResult
+import org.springframework.validation.FieldError
+import org.springframework.validation.ObjectError
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.hamcrest.Matchers.aMapWithSize
 import org.hamcrest.Matchers.hasKey
 import org.hamcrest.Matchers.nullValue
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-data class ProbeBody(@field:NotBlank val name: String)
+data class ProbeBody(@field:NotBlank(message = "필수 입력 항목입니다.") val name: String)
 
 class DetailedProbeException : ApplicationException(UserErrorType.DUPLICATE_EMAIL, debugMessage = "내부-디버그-메모") {
 	override val details = mapOf("remainingAttempts" to 4)
@@ -53,7 +59,20 @@ class ExceptionProbeController {
 		"name" -> InvalidNameException("이름 위반")
 		"detailed" -> DetailedProbeException()
 		"caused" -> CausedProbeException()
+		"global" -> invalidBody(
+			FieldError("probeBody", "zeta", "필드 오류"),
+			FieldError("probeBody", "name", "필드 오류"),
+			ObjectError("probeBody", "전체 오류"),
+		)
+		"multi" -> invalidBody(FieldError("probeBody", "name", "나 메시지"), FieldError("probeBody", "name", "가 메시지"))
 		else -> IllegalStateException("secret-internal-detail")
+	}
+
+	// MethodArgumentNotValidException을 직접 만들어 던진다 (필드에 속하지 않는 오류·같은 필드의 여러 오류)
+	private fun invalidBody(vararg errors: ObjectError): MethodArgumentNotValidException {
+		val parameter = MethodParameter(ExceptionProbeController::class.java.getMethod("body", ProbeBody::class.java), 0)
+		val bindingResult = BeanPropertyBindingResult(ProbeBody("x"), "probeBody").apply { errors.forEach(::addError) }
+		return MethodArgumentNotValidException(parameter, bindingResult)
 	}
 
 	@PostMapping("/probe/body", consumes = [MediaType.APPLICATION_JSON_VALUE])
@@ -152,6 +171,16 @@ class GlobalExceptionHandlerTest @Autowired constructor(
 	}
 
 	@Test
+	fun `H12 Bean Validation 실패는 details에 필드별 오류를 싣는다`() {
+		mockMvc.perform(post("/probe/body").contentType(MediaType.APPLICATION_JSON).content("""{"name":""}"""))
+			.expectError(400, "COMMON-001", "요청 값이 올바르지 않습니다.")
+			.andExpect(jsonPath("$.error.details.fieldErrors.length()").value(1))
+			.andExpect(jsonPath("$.error.details.fieldErrors[0]").value(aMapWithSize<String, Any?>(2))) // field·reason만, 입력값 없음
+			.andExpect(jsonPath("$.error.details.fieldErrors[0].field").value("name"))
+			.andExpect(jsonPath("$.error.details.fieldErrors[0].reason").value("필수 입력 항목입니다."))
+	}
+
+	@Test
 	fun `H14 cause 없는 애플리케이션 예외는 코드·종류·요청·개발 메모를 INFO로 남긴다`(output: CapturedOutput) {
 		probe("detailed")
 
@@ -179,5 +208,28 @@ class GlobalExceptionHandlerTest @Autowired constructor(
 		assertTrue(line.endsWith("details=null"), line) // 로그 형식이 그대로다 (자리표시자를 늘리면 `{}`가 글자로 남아 실패)
 		assertTrue(lines.any { it == "java.lang.IllegalStateException: 원인-예외" }, output.out)
 		assertTrue(lines.any { it.startsWith("	at ") }, output.out)
+	}
+
+	@Test
+	fun `H25 특정 필드에 속하지 않는 오류는 field가 null로 맨 앞에 오고 나머지는 필드 이름순이다`() {
+		probe("global")
+			.expectError(400, "COMMON-001", "요청 값이 올바르지 않습니다.")
+			.andExpect(jsonPath("$.error.details.fieldErrors.length()").value(3))
+			.andExpect(jsonPath("$.error.details.fieldErrors[0]").value(hasKey("field")))
+			.andExpect(jsonPath("$.error.details.fieldErrors[0].field").value(nullValue()))
+			.andExpect(jsonPath("$.error.details.fieldErrors[0].reason").value("전체 오류"))
+			.andExpect(jsonPath("$.error.details.fieldErrors[1].field").value("name"))
+			.andExpect(jsonPath("$.error.details.fieldErrors[2].field").value("zeta"))
+	}
+
+	@Test
+	fun `H26 같은 필드의 오류는 reason 오름차순으로 정렬한다`() {
+		probe("multi")
+			.expectError(400, "COMMON-001")
+			.andExpect(jsonPath("$.error.details.fieldErrors.length()").value(2))
+			.andExpect(jsonPath("$.error.details.fieldErrors[0].field").value("name"))
+			.andExpect(jsonPath("$.error.details.fieldErrors[0].reason").value("가 메시지"))
+			.andExpect(jsonPath("$.error.details.fieldErrors[1].field").value("name"))
+			.andExpect(jsonPath("$.error.details.fieldErrors[1].reason").value("나 메시지"))
 	}
 }
