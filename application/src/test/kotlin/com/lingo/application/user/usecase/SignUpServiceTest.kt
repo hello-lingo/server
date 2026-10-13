@@ -5,6 +5,7 @@ import com.lingo.domain.user.Email
 import com.lingo.domain.user.InvalidEmailException
 import com.lingo.domain.user.InvalidNameException
 import com.lingo.domain.user.InvalidPasswordException
+import com.lingo.domain.user.Role
 import com.lingo.domain.user.User
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -37,7 +38,7 @@ class SignUpServiceTest {
 
 	@Test
 	fun `S3 대소문자만 다른 이메일이 있으면 DuplicateEmailException이고 저장과 해싱은 없다`() {
-		store.users += User(10L, Email.of("user@example.com"), "hash", "기존")
+		store.users += User(10L, Email.of("user@example.com"), "hash", "기존", Role.USER)
 
 		assertFailsWith<DuplicateEmailException> { service.signUp(command) }
 

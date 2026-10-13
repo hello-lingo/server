@@ -2,6 +2,7 @@ package com.lingo.adapter.outbound.persistence.user
 
 import com.lingo.application.user.exception.DuplicateEmailException
 import com.lingo.domain.user.Email
+import com.lingo.domain.user.Role
 import com.lingo.domain.user.User
 import jakarta.persistence.EntityManager
 import org.springframework.beans.factory.annotation.Autowired
@@ -80,5 +81,15 @@ class UserPersistenceAdapterTest @Autowired constructor(
 	@Test
 	fun `R6 저장되지 않은 이메일은 null`() {
 		assertNull(adapter.findByEmail(Email.of("none@b.com")))
+	}
+
+	@Test
+	fun `R7 role이 ADMIN인 사용자를 저장하고 재조회하면 ADMIN이다`() {
+		adapter.save(newUser("a@b.com").copy(role = Role.ADMIN))
+		entityManager.clear()
+
+		val found = assertNotNull(adapter.findByEmail(Email.of("a@b.com")))
+
+		assertEquals(Role.ADMIN, found.role)
 	}
 }

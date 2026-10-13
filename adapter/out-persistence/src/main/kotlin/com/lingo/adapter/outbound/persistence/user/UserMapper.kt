@@ -1,13 +1,26 @@
 package com.lingo.adapter.outbound.persistence.user
 
 import com.lingo.domain.user.Email
+import com.lingo.domain.user.Role
 import com.lingo.domain.user.User
 
 internal object UserMapper {
 
 	fun toEntity(user: User): UserJpaEntity =
-		UserJpaEntity(id = user.id, email = user.email.value, passwordHash = user.passwordHash, name = user.name)
+		UserJpaEntity(
+			id = user.id,
+			email = user.email.value,
+			passwordHash = user.passwordHash,
+			name = user.name,
+			role = user.role.name,
+		)
 
 	fun toDomain(entity: UserJpaEntity): User =
-		User(id = entity.id, email = Email.of(entity.email), passwordHash = entity.passwordHash, name = entity.name)
+		User(
+			id = entity.id,
+			email = Email.of(entity.email),
+			passwordHash = entity.passwordHash,
+			name = entity.name,
+			role = Role.valueOf(entity.role),
+		)
 }
