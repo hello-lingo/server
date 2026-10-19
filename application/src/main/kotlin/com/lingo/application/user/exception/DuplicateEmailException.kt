@@ -1,6 +1,9 @@
 package com.lingo.application.user.exception
 
+import com.lingo.application.common.error.ApplicationException
+import com.lingo.application.common.error.UserErrorType
+
 class DuplicateEmailException(
-	message: String = "이미 가입된 이메일입니다.",
+	debugMessage: String? = null,
 	cause: Throwable? = null,
-) : RuntimeException(message, cause)
+) : ApplicationException(UserErrorType.DUPLICATE_EMAIL, debugMessage, cause)

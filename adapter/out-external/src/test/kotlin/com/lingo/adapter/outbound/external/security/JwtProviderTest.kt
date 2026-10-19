@@ -1,11 +1,15 @@
 package com.lingo.adapter.outbound.external.security
 
 import com.lingo.application.user.model.AuthenticatedUser
+import com.lingo.domain.user.Role
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.security.Keys
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneOffset
 import java.util.Base64
+import java.util.Date
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -18,7 +22,7 @@ class JwtProviderTest {
 
 	private val secret = "test-secret-test-secret-test-secret-32b"
 	private val now = Instant.parse("2026-01-01T00:00:00Z")
-	private val user = AuthenticatedUser(userId = 7, email = "a@b.com")
+	private val user = AuthenticatedUser(userId = 7, email = "a@b.com", role = Role.USER)
 
 	private fun clockAt(instant: Instant) = Clock.fixed(instant, ZoneOffset.UTC)
 
@@ -27,6 +31,16 @@ class JwtProviderTest {
 
 	private fun payloadOf(token: String): String =
 		String(Base64.getUrlDecoder().decode(token.split(".")[1]))
+
+	private fun signedToken(role: Any?): String =
+		Jwts.builder()
+			.subject("7")
+			.claim("email", "a@b.com")
+			.apply { role?.let { claim("role", it) } }
+			.issuedAt(Date.from(now))
+			.expiration(Date.from(now.plusSeconds(3600)))
+			.signWith(Keys.hmacShaKeyFor(secret.toByteArray(Charsets.UTF_8)))
+			.compact()
 
 	@Test
 	fun `J1 발급한 토큰을 검증하면 사용자 정보가 복원되고 expiresIn은 TTL이다`() {
@@ -73,11 +87,12 @@ class JwtProviderTest {
 	}
 
 	@Test
-	fun `J6 payload는 sub와 email만 담고 해시를 담지 않는다`() {
+	fun `J6 payload는 sub email role을 담고 해시를 담지 않는다`() {
 		val payload = payloadOf(provider().issue(user).token)
 
 		assertContains(payload, "\"sub\":\"7\"")
 		assertContains(payload, "\"email\":\"a@b.com\"")
+		assertContains(payload, "\"role\":\"USER\"")
 		assertFalse(payload.contains("secrethash"))
 	}
 
@@ -86,5 +101,26 @@ class JwtProviderTest {
 		val payload = payloadOf(provider().issue(user).token)
 
 		assertContains(payload, "\"exp\":${now.plus(Duration.ofHours(1)).epochSecond}")
+	}
+
+	@Test
+	fun `J8 ADMIN으로 발급한 토큰을 검증하면 role이 ADMIN이다`() {
+		val token = provider().issue(user.copy(role = Role.ADMIN)).token
+
+		assertEquals(Role.ADMIN, assertNotNull(provider().verify(token)).role)
+	}
+
+	@Test
+	fun `J9 role 클레임이 없는 토큰은 null이다`() {
+		assertNotNull(provider().verify(signedToken(role = "USER")))
+		assertNull(provider().verify(signedToken(role = null)))
+	}
+
+	@Test
+	fun `J10 Role에 없는 값 소문자 문자열이 아닌 role의 토큰은 null이다`() {
+		assertNotNull(provider().verify(signedToken(role = "USER")))
+		listOf("SUPERUSER", "admin", "", 123, listOf("ADMIN")).forEach { role ->
+			assertNull(provider().verify(signedToken(role = role)), role.toString())
+		}
 	}
 }

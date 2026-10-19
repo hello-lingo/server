@@ -16,7 +16,7 @@ class UserPersistenceAdapter(
 		try {
 			UserMapper.toDomain(repository.saveAndFlush(UserMapper.toEntity(user)))
 		} catch (e: DataIntegrityViolationException) {
-			throw DuplicateEmailException(cause = e)
+			throw DuplicateEmailException(debugMessage = "uk_users_email 고유 제약 위반 (동시 가입 의심)", cause = e)
 		}
 
 	override fun existsByEmail(email: Email): Boolean = repository.existsByEmail(email.value)

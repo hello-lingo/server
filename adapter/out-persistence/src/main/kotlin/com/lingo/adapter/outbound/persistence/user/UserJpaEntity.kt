@@ -23,4 +23,7 @@ class UserJpaEntity(
 
 	@Column(nullable = false)
 	var name: String,
+
+	@Column(nullable = false, length = 20)
+	var role: String,
 )
