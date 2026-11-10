@@ -3,6 +3,8 @@ package com.lingo.adapter.outbound.persistence.school
 import com.lingo.application.school.exception.DuplicateSchoolNameException
 import com.lingo.application.school.port.out.SchoolRepositoryPort
 import com.lingo.domain.school.School
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Component
 
@@ -11,7 +13,9 @@ class SchoolPersistenceAdapter(
 	private val repository: SchoolJpaRepository,
 ) : SchoolRepositoryPort {
 
+	// 학교가 바뀌면 검색용 전체 목록 캐시를 비운다 (커밋 뒤, SchoolCacheConfig)
 	// id가 있으면 merge되어 도메인 목록을 통째로 맞춘다 (빠진 도메인은 orphanRemoval로 삭제)
+	@CacheEvict(SchoolCacheConfig.SCHOOLS, allEntries = true)
 	override fun save(school: School): School =
 		try {
 			SchoolMapper.toDomain(repository.saveAndFlush(SchoolMapper.toEntity(school)))
@@ -25,7 +29,9 @@ class SchoolPersistenceAdapter(
 
 	override fun findById(id: Long): School? = repository.findById(id).orElse(null)?.let(SchoolMapper::toDomain)
 
+	@Cacheable(SchoolCacheConfig.SCHOOLS)
 	override fun findAll(): List<School> = repository.findAllWithDomains().map(SchoolMapper::toDomain)
 
+	@CacheEvict(SchoolCacheConfig.SCHOOLS, allEntries = true)
 	override fun deleteById(id: Long) = repository.deleteById(id)
 }
