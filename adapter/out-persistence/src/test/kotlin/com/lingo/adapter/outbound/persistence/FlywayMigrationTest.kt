@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 @DataJpaTest
 class FlywayMigrationTest @Autowired constructor(
@@ -58,5 +59,39 @@ class FlywayMigrationTest @Autowired constructor(
 		).toSet()
 
 		assertEquals(setOf("SCHOOLS.UK_SCHOOLS_NAME", "SCHOOL_DOMAINS.UK_SCHOOL_DOMAINS_SCHOOL_DOMAIN"), constraints)
+	}
+
+	@Test
+	fun `FW5 V4 시드로 학교와 도메인이 들어 있다 (AC-3_1)`() {
+		val v4 = flyway.info().applied().firstOrNull { it.version?.version == "4" }
+		assertNotNull(v4)
+		assertEquals(MigrationState.SUCCESS, v4.state)
+
+		val schools = jdbcTemplate.queryForObject("select count(*) from schools", Int::class.java)!!
+		assertTrue(schools >= 200, "학교 수: $schools")
+		assertEquals(
+			listOf("cau.ac.kr"),
+			jdbcTemplate.queryForList(
+				"select d.domain from school_domains d join schools s on s.id = d.school_id where s.name = '중앙대학교(다빈치캠퍼스)'",
+				String::class.java,
+			),
+		)
+	}
+
+	@Test
+	fun `FW6 시드의 모든 학교는 숨기지 않았고 도메인이 1개 이상이며 도메인은 정규화된 형식이다`() {
+		val withoutDomain = jdbcTemplate.queryForObject(
+			"select count(*) from schools s where not exists (select 1 from school_domains d where d.school_id = s.id)",
+			Int::class.java,
+		)
+		assertEquals(0, withoutDomain)
+		assertEquals(0, jdbcTemplate.queryForObject("select count(*) from schools where hidden", Int::class.java))
+
+		val format = Regex("^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$")
+		val invalid = jdbcTemplate.queryForList("select domain from school_domains", String::class.java).filterNot { format.matches(it.orEmpty()) }
+		assertEquals(emptyList(), invalid)
+
+		val untrimmed = jdbcTemplate.queryForList("select name from schools where name <> trim(name) or name = ''", String::class.java)
+		assertEquals(emptyList(), untrimmed)
 	}
 }

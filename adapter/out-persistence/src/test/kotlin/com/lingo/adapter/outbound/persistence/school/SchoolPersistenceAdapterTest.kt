@@ -5,6 +5,7 @@ import com.lingo.domain.school.School
 import com.lingo.domain.school.SchoolDomain
 import com.lingo.domain.school.SchoolName
 import jakarta.persistence.EntityManager
+import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
 import org.springframework.context.annotation.Import
@@ -25,6 +26,13 @@ class SchoolPersistenceAdapterTest @Autowired constructor(
 	private val entityManager: EntityManager,
 	private val jdbcTemplate: JdbcTemplate,
 ) {
+
+	// V4 시드 학교가 들어 있으므로 비우고 시작한다. @DataJpaTest는 테스트마다 롤백하므로 다른 테스트에는 영향이 없다
+	@BeforeEach
+	fun removeSeed() {
+		jdbcTemplate.update("delete from school_domains")
+		jdbcTemplate.update("delete from schools")
+	}
 
 	private fun domain(raw: String) = SchoolDomain.of(raw)
 
