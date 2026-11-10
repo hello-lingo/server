@@ -1,5 +1,6 @@
 package com.lingo.application.school.usecase
 
+import com.lingo.application.school.exception.DuplicateSchoolNameException
 import com.lingo.application.school.port.out.SchoolRepositoryPort
 import com.lingo.domain.school.RegisteredDomain
 import com.lingo.domain.school.School
@@ -16,7 +17,11 @@ class FakeSchoolStore : SchoolRepositoryPort {
 	fun given(name: String, vararg domains: String, hidden: Boolean = false): School =
 		save(School.create(SchoolName.of(name), domains.map(SchoolDomain::of)).changeVisibility(hidden))
 
+	/** 실제 어댑터처럼 다른 학교와 이름이 겹치면 DuplicateSchoolNameException (DB 고유 제약 흉내) */
 	override fun save(school: School): School {
+		if (schools.any { it.id != school.id && it.name == school.name }) {
+			throw DuplicateSchoolNameException()
+		}
 		val saved = school.copy(
 			id = school.id ?: ++schoolSequence,
 			domains = school.domains.map { if (it.id == null) RegisteredDomain(++domainSequence, it.domain) else it },

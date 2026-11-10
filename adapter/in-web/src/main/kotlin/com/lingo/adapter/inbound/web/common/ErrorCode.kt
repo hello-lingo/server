@@ -22,6 +22,8 @@ enum class ErrorCode(val code: String, val message: String, val status: HttpStat
 	/** details: { maxSizeMb: Int } */
 	FILE_TOO_LARGE("COMMON-007", "파일 크기는 10MB를 넘을 수 없습니다.", HttpStatus.CONTENT_TOO_LARGE),
 	DUPLICATE_SCHOOL_NAME("SCHOOL-001", "이미 등록된 학교 이름입니다.", HttpStatus.CONFLICT),
+	SCHOOL_NOT_FOUND("SCHOOL-002", "학교를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+	SCHOOL_DOMAIN_NOT_FOUND("SCHOOL-003", "학교 도메인을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 	;
 
 	companion object {
@@ -33,6 +35,8 @@ enum class ErrorCode(val code: String, val message: String, val status: HttpStat
 			}
 			is SchoolErrorType -> when (errorType) {
 				SchoolErrorType.DUPLICATE_SCHOOL_NAME -> DUPLICATE_SCHOOL_NAME
+				SchoolErrorType.SCHOOL_NOT_FOUND -> SCHOOL_NOT_FOUND
+				SchoolErrorType.SCHOOL_DOMAIN_NOT_FOUND -> SCHOOL_DOMAIN_NOT_FOUND
 			}
 		}
 	}

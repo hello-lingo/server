@@ -41,6 +41,8 @@ class ErrorCodeTest {
 			ErrorCode.INTERNAL_ERROR to ("COMMON-006" to HttpStatus.INTERNAL_SERVER_ERROR),
 			ErrorCode.FILE_TOO_LARGE to ("COMMON-007" to HttpStatus.CONTENT_TOO_LARGE),
 			ErrorCode.DUPLICATE_SCHOOL_NAME to ("SCHOOL-001" to HttpStatus.CONFLICT),
+			ErrorCode.SCHOOL_NOT_FOUND to ("SCHOOL-002" to HttpStatus.NOT_FOUND),
+			ErrorCode.SCHOOL_DOMAIN_NOT_FOUND to ("SCHOOL-003" to HttpStatus.NOT_FOUND),
 		)
 
 		assertEquals(expected.keys, ErrorCode.entries.toSet())
@@ -60,6 +62,8 @@ class ErrorCodeTest {
 	@Test
 	fun `EC5 SchoolErrorType 전부가 ErrorCode로 연결된다`() {
 		assertEquals(ErrorCode.DUPLICATE_SCHOOL_NAME, ErrorCode.from(SchoolErrorType.DUPLICATE_SCHOOL_NAME))
+		assertEquals(ErrorCode.SCHOOL_NOT_FOUND, ErrorCode.from(SchoolErrorType.SCHOOL_NOT_FOUND))
+		assertEquals(ErrorCode.SCHOOL_DOMAIN_NOT_FOUND, ErrorCode.from(SchoolErrorType.SCHOOL_DOMAIN_NOT_FOUND))
 		SchoolErrorType.entries.forEach { ErrorCode.from(it) }
 	}
 }
