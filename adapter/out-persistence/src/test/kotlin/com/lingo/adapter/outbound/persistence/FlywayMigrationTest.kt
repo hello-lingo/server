@@ -37,4 +37,26 @@ class FlywayMigrationTest @Autowired constructor(
 
 		assertEquals(1, count)
 	}
+
+	@Test
+	fun `FW3 V3 마이그레이션이 성공으로 적용된다`() {
+		val v3 = flyway.info().applied().firstOrNull { it.version?.version == "3" }
+
+		assertNotNull(v3)
+		assertEquals(MigrationState.SUCCESS, v3.state)
+		assertEquals("create schools", v3.description)
+	}
+
+	@Test
+	fun `FW4 학교 이름은 전체에서 도메인은 학교 안에서 고유하다`() {
+		val constraints = jdbcTemplate.queryForList(
+			"""
+			select table_name || '.' || constraint_name from information_schema.table_constraints
+			where table_name in ('SCHOOLS', 'SCHOOL_DOMAINS') and constraint_type = 'UNIQUE'
+			""".trimIndent(),
+			String::class.java,
+		).toSet()
+
+		assertEquals(setOf("SCHOOLS.UK_SCHOOLS_NAME", "SCHOOL_DOMAINS.UK_SCHOOL_DOMAINS_SCHOOL_DOMAIN"), constraints)
+	}
 }

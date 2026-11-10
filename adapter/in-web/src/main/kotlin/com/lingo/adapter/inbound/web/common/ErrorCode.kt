@@ -1,10 +1,11 @@
 package com.lingo.adapter.inbound.web.common
 
 import com.lingo.application.common.error.ErrorType
+import com.lingo.application.common.error.SchoolErrorType
 import com.lingo.application.common.error.UserErrorType
 import org.springframework.http.HttpStatus
 
-// 코드 접두는 도메인 규칙을 따른다: USER-, AUTH-, COMMON-
+// 코드 접두는 도메인 규칙을 따른다: USER-, AUTH-, COMMON-, SCHOOL-
 /** details를 쓰는 항목은 그 모양을 KDoc으로 적는다 */
 enum class ErrorCode(val code: String, val message: String, val status: HttpStatus) {
 	DUPLICATE_EMAIL("USER-001", "이미 가입된 이메일입니다.", HttpStatus.CONFLICT),
@@ -20,6 +21,7 @@ enum class ErrorCode(val code: String, val message: String, val status: HttpStat
 	INTERNAL_ERROR("COMMON-006", "서버 내부 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 	/** details: { maxSizeMb: Int } */
 	FILE_TOO_LARGE("COMMON-007", "파일 크기는 10MB를 넘을 수 없습니다.", HttpStatus.CONTENT_TOO_LARGE),
+	DUPLICATE_SCHOOL_NAME("SCHOOL-001", "이미 등록된 학교 이름입니다.", HttpStatus.CONFLICT),
 	;
 
 	companion object {
@@ -28,6 +30,9 @@ enum class ErrorCode(val code: String, val message: String, val status: HttpStat
 			is UserErrorType -> when (errorType) {
 				UserErrorType.DUPLICATE_EMAIL -> DUPLICATE_EMAIL
 				UserErrorType.INVALID_CREDENTIALS -> INVALID_CREDENTIALS
+			}
+			is SchoolErrorType -> when (errorType) {
+				SchoolErrorType.DUPLICATE_SCHOOL_NAME -> DUPLICATE_SCHOOL_NAME
 			}
 		}
 	}
