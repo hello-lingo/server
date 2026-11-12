@@ -1,5 +1,6 @@
 package com.lingo.adapter.inbound.web.common
 
+import com.lingo.application.common.error.SchoolErrorType
 import com.lingo.application.common.error.UserErrorType
 import org.springframework.http.HttpStatus
 import kotlin.test.Test
@@ -17,7 +18,7 @@ class ErrorCodeTest {
 
 	@Test
 	fun `EC2 code는 도메인 접두 형식이고 메시지는 비어있지 않다`() {
-		val format = Regex("^(USER|AUTH|COMMON)-\\d{3}$")
+		val format = Regex("^(USER|AUTH|COMMON|SCHOOL)-\\d{3}$")
 
 		ErrorCode.entries.forEach {
 			assertTrue(format.matches(it.code), it.code)
@@ -39,6 +40,9 @@ class ErrorCodeTest {
 			ErrorCode.NOT_FOUND to ("COMMON-005" to HttpStatus.NOT_FOUND),
 			ErrorCode.INTERNAL_ERROR to ("COMMON-006" to HttpStatus.INTERNAL_SERVER_ERROR),
 			ErrorCode.FILE_TOO_LARGE to ("COMMON-007" to HttpStatus.CONTENT_TOO_LARGE),
+			ErrorCode.DUPLICATE_SCHOOL_NAME to ("SCHOOL-001" to HttpStatus.CONFLICT),
+			ErrorCode.SCHOOL_NOT_FOUND to ("SCHOOL-002" to HttpStatus.NOT_FOUND),
+			ErrorCode.SCHOOL_DOMAIN_NOT_FOUND to ("SCHOOL-003" to HttpStatus.NOT_FOUND),
 		)
 
 		assertEquals(expected.keys, ErrorCode.entries.toSet())
@@ -53,5 +57,13 @@ class ErrorCodeTest {
 		assertEquals(ErrorCode.DUPLICATE_EMAIL, ErrorCode.from(UserErrorType.DUPLICATE_EMAIL))
 		assertEquals(ErrorCode.INVALID_CREDENTIALS, ErrorCode.from(UserErrorType.INVALID_CREDENTIALS))
 		UserErrorType.entries.forEach { ErrorCode.from(it) }
+	}
+
+	@Test
+	fun `EC5 SchoolErrorType 전부가 ErrorCode로 연결된다`() {
+		assertEquals(ErrorCode.DUPLICATE_SCHOOL_NAME, ErrorCode.from(SchoolErrorType.DUPLICATE_SCHOOL_NAME))
+		assertEquals(ErrorCode.SCHOOL_NOT_FOUND, ErrorCode.from(SchoolErrorType.SCHOOL_NOT_FOUND))
+		assertEquals(ErrorCode.SCHOOL_DOMAIN_NOT_FOUND, ErrorCode.from(SchoolErrorType.SCHOOL_DOMAIN_NOT_FOUND))
+		SchoolErrorType.entries.forEach { ErrorCode.from(it) }
 	}
 }

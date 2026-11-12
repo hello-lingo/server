@@ -2,10 +2,12 @@ package com.lingo.support
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.cache.CacheManager
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @SpringBootTest
@@ -13,6 +15,7 @@ import kotlin.test.assertTrue
 class DatabaseCleanerTest @Autowired constructor(
 	private val databaseCleaner: DatabaseCleaner,
 	private val jdbcTemplate: JdbcTemplate,
+	private val cacheManager: CacheManager,
 ) {
 
 	private fun count(table: String): Int =
@@ -42,5 +45,15 @@ class DatabaseCleanerTest @Autowired constructor(
 		databaseCleaner.clean()
 
 		assertEquals(before, count("\"flyway_schema_history\""))
+	}
+
+	@Test
+	fun `DC3 clean은 모든 캐시를 비운다 (DB를 비운 뒤 옛 학교 목록이 남지 않게)`() {
+		cacheManager.cacheNames.forEach { cacheManager.getCache(it)!!.put("key", "stale") }
+
+		databaseCleaner.clean()
+
+		cacheManager.cacheNames.forEach { assertNull(cacheManager.getCache(it)!!.get("key"), it) }
+		assertTrue(cacheManager.cacheNames.isNotEmpty())
 	}
 }
