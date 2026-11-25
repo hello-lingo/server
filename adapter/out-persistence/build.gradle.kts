@@ -8,6 +8,8 @@ dependencies {
 	implementation(project(":common"))
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-flyway")
+	implementation("org.springframework.boot:spring-boot-starter-cache")
+	implementation("com.github.ben-manes.caffeine:caffeine")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	runtimeOnly("org.flywaydb:flyway-database-postgresql")
 	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
